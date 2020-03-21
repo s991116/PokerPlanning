@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import * as http from "http";
 import { Message } from "./model";
+import path from "path"
 
 export class ChatServer {
   public static readonly PORT:number = 8080;
@@ -21,6 +22,10 @@ export class ChatServer {
   private createApp(): void {
     this.app = express();
     this.app.use(cors());
+
+
+    var htmlPath = path.resolve(__dirname + "./../../client/dist/client/");
+    this.app.use(express.static(htmlPath));
   }
 
   private createServer(): void {
