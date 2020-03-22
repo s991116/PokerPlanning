@@ -25,7 +25,10 @@ export class ChatServer {
 
 
     var htmlPath = path.resolve(__dirname + "./../../client/dist/client/");
-    this.app.use(express.static(htmlPath));
+    this.app.get('*.*', express.static(htmlPath, {maxAge: '1y'}));
+    this.app.all('*', function (req, res) {
+      res.status(200).sendFile(`/`, {root: htmlPath});
+  });
   }
 
   private createServer(): void {

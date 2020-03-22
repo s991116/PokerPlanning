@@ -1,10 +1,20 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
-import { ChatComponent } from './chat/chat.component';
+import { PageNotFoundComponent } from './page-not-found/page-not-found.component'
+import { PlanningSessionComponent } from './planning-session/planning-session.component'
+import { CreateSessionComponent } from './create-session/create-session.component'
 
 const routes: Routes = [
   {
-    path: '', component: ChatComponent
+    path: 'session/:id',
+    component: PlanningSessionComponent,
+  },
+  { path: '',
+    component: CreateSessionComponent,
+    pathMatch: 'full'
+  },
+  {
+    path: '**', component: PageNotFoundComponent
   }
 ];
 
