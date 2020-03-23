@@ -1,5 +1,4 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-
 import { CreateSessionComponent } from './create-session.component';
 
 describe('CreateSessionComponent', () => {

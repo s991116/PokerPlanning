@@ -10,9 +10,10 @@ import { MatFormFieldModule } from '@angular/material/form-field'
 import { MatInputModule}  from '@angular/material/input'
 import { MatExpansionModule } from '@angular/material/expansion'
 import { MatButtonModule } from '@angular/material/button'
-import {MatListModule} from '@angular/material/list';
+import { MatListModule } from '@angular/material/list';
 
 import { HttpClientModule, HttpClient } from '@angular/common/http';
+
 import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
 
