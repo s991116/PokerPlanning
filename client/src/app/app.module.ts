@@ -23,6 +23,9 @@ import { CreateSessionComponent } from './create-session/create-session.componen
 import { ReactiveFormsModule } from '@angular/forms';
 import { PlanningSessionComponent } from './planning-session/planning-session.component';
 
+import { StorageServiceModule } from 'ngx-webstorage-service';
+
+
 export function HttpLoaderFactory(http: HttpClient) {
   return new TranslateHttpLoader(http);
 }
@@ -32,7 +35,7 @@ export function HttpLoaderFactory(http: HttpClient) {
     AppComponent,
     PageNotFoundComponent,
     CreateSessionComponent,
-    PlanningSessionComponent
+    PlanningSessionComponent,
   ],
   imports: [
     BrowserModule,
@@ -45,6 +48,7 @@ export function HttpLoaderFactory(http: HttpClient) {
     MatListModule,
     AppRoutingModule,
     HttpClientModule,
+    StorageServiceModule,
     TranslateModule.forRoot({
       loader: {
         provide: TranslateLoader,
@@ -54,7 +58,8 @@ export function HttpLoaderFactory(http: HttpClient) {
     }),
     ReactiveFormsModule
   ],
-  providers: [],
+  providers: [
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

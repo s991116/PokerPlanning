@@ -1,3 +1,2 @@
-export { Message } from './message';
-export { ChatMessage } from './chat-message';
+export { Session } from './session';
 export { User } from './user';
