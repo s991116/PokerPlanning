@@ -1,6 +1,14 @@
-<p>planning-session works!</p>
+<p>Planning Session: {{session.name}}</p>
 
 <div class="md-form">
     <label for="userName">Your name</label>
     <input mdbInput placeholder="{{userName}}" type="text" id="userName" class="form-control">
 </div>
+
+<p>Users</p>
+<ul>
+    <li *ngFor="let user of session.users">
+      {{ user.name }}
+    </li>
+</ul>
+

@@ -4,6 +4,7 @@ import * as io from 'socket.io-client';
 import { Inject, Injectable } from '@angular/core';
 import { SESSION_STORAGE, StorageService } from 'ngx-webstorage-service';
 import { HttpClient } from '@angular/common/http';
+import { Session, User } from "./../model/";
 
 const USERNAME_SESSION_KEY = 'UserInfo';
 
@@ -14,20 +15,21 @@ const USERNAME_SESSION_KEY = 'UserInfo';
 })
 export class PlanningSessionComponent implements OnInit {
   sessionId:string;
+  sessionName:string;
   userDefined:boolean;
   userName:string;
+  session:Session;
 
   constructor(private _Activatedroute:ActivatedRoute, @Inject(SESSION_STORAGE) private storage: StorageService, private http: HttpClient) { 
       this._Activatedroute.paramMap.subscribe(params => { 
       this.sessionId = params.get('id'); 
       console.log("Room Session Id:" + this.sessionId);
+      this.session = new Session("", "");
     });
   }
 
   ngOnInit(): void {
-
     this.userDefined = this.storage.has(USERNAME_SESSION_KEY);
-
     console.log("Starting Socket connection from User to Server")
     const socket = io("http://localhost:8080");
     socket.on('connect', () => {
@@ -50,8 +52,11 @@ export class PlanningSessionComponent implements OnInit {
           };
     });
 
-    socket.on('status', function(data) {
-      console.log('Incoming message:', data);
+    socket.on('status', (data) => {
+      this.session = data as Session;
+      console.log(this.session);
+      console.log("Session name before:" + this.sessionName);
+      this.sessionName = this.session.name;
     });
   }
 }

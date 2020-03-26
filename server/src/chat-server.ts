@@ -3,6 +3,8 @@ import cors from "cors";
 import * as http from "http";
 import { Session, User } from "./model";
 import path from "path";
+import { v4 as uuidv4 } from "uuid";
+
 var bodyParser = require("body-parser");
 
 export class ChatServer {
@@ -25,7 +27,7 @@ export class ChatServer {
   }
 
   private createNewSession(name: string) : string {
-    let session = new Session(name);
+    let session = new Session(uuidv4(), name);
     this.sessions[session.id]=session;
     return session.id;
   }
@@ -37,7 +39,7 @@ export class ChatServer {
     console.log("SessionId to look for users:"+sessionId);
     console.log(session);
     let userName = "User"+session.users.length;
-    let user = new User(userName, socketId);
+    let user = new User(uuidv4(), userName, socketId);
     session.users.push(user);
 
     return user;
@@ -122,8 +124,6 @@ export class ChatServer {
       socket.on('sessionRoom', (sessionRoomID) => {
           console.log("User joined Room:" + sessionRoomID);
           socket.join(sessionRoomID);
-          console.log("Sending to room '"+sessionRoomID+"' message topic 'status' and data 'sessionStatus'");
-          this.io.sockets.in(sessionRoomID).emit("status",this.sessions[sessionRoomID]);
       });
       socket.on('disconnect', () => {
         console.log("Disconnection from user, with socket id:" + socket.id);
