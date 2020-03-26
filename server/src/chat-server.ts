@@ -12,6 +12,7 @@ export class ChatServer {
   private io: SocketIO.Server;
   private port: string | number;
   private sessions : { [key: string]: Session }
+  private socketIdWithSession : { [sessionId: string]: string}
 
   constructor() {
     this.createApp();
@@ -20,6 +21,7 @@ export class ChatServer {
     this.sockets();
     this.listen();
     this.sessions = {};
+    this.socketIdWithSession = {};
   }
 
   private createNewSession(name: string) : string {
@@ -28,14 +30,35 @@ export class ChatServer {
     return session.id;
   }
 
-  private createNewUser(sessionId: string) : User {
+  private createNewUser(sessionId: string, socketId: string) : User {
+    this.socketIdWithSession[socketId] = sessionId;
+
     let session = this.sessions[sessionId];
     console.log("SessionId to look for users:"+sessionId);
     console.log(session);
     let userName = "User"+session.users.length;
-    let user = new User(userName);
+    let user = new User(userName, socketId);
     session.users.push(user);
+
     return user;
+  }
+
+  private removeDisconnectedUser(socket: SocketIO.Socket) : void {
+    let sessionId = this.socketIdWithSession[socket.id];
+    if(sessionId === undefined)
+    { 
+      return;
+    }
+    let users = this.sessions[sessionId].users;
+    if(users === undefined) {
+      return;
+    }
+
+    users.forEach( (item, index) => {
+      if(item.socketId === socket.id) users.splice(index,1);
+    });
+
+    socket.in(sessionId).emit("status",this.sessions[sessionId]);
   }
 
   private createApp(): void {
@@ -49,15 +72,28 @@ export class ChatServer {
     this.app.post('/createSession', (req, res) => {
       let sessionId = this.createNewSession(req.body.sessionName);
       console.log("Created session with ID:" + sessionId);
-
+      this.io.in(sessionId).emit("status", this.sessions[sessionId]);
       res.json({ sessionId: sessionId });
-    })
+    });
 
     this.app.post('/createUser', (req, res) => {
       console.log(req.body);
-      let user = this.createNewUser(req.body.sessionId);
-      res.json(user);
-    })
+      let sessionId = req.body.sessionId;
+      let socketId = req.body.socketId;
+
+      if(this.sessions[sessionId] === undefined)
+      {
+          res.status(400).json({
+            status: 'error',
+            error: 'sessionId do not exists',
+          });
+      }
+      else {
+        let user = this.createNewUser(sessionId, socketId);
+        this.io.in(sessionId).emit("status", this.sessions[sessionId]);
+        res.json(user);  
+      }
+    });
 
     this.app.all('*', function (req, res) {
       res.status(200).sendFile(`/`, {root: htmlPath});
@@ -81,15 +117,17 @@ export class ChatServer {
       console.log("Running server on port %s", this.port);
     });
 
-    let sessionStatus = "Dummy Session Status text";
-
     this.io.on('connection', socket => {
-      console.log("User connected to soccket");
+      console.log("User connected to soccket, with socket id:" + socket.id);
       socket.on('sessionRoom', (sessionRoomID) => {
           console.log("User joined Room:" + sessionRoomID);
           socket.join(sessionRoomID);
           console.log("Sending to room '"+sessionRoomID+"' message topic 'status' and data 'sessionStatus'");
-          this.io.sockets.in(sessionRoomID).emit("status",sessionStatus);
+          this.io.sockets.in(sessionRoomID).emit("status",this.sessions[sessionRoomID]);
+      });
+      socket.on('disconnect', () => {
+        console.log("Disconnection from user, with socket id:" + socket.id);
+        this.removeDisconnectedUser(socket);
       });
     });
   }

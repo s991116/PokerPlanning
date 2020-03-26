@@ -27,28 +27,27 @@ export class PlanningSessionComponent implements OnInit {
   ngOnInit(): void {
 
     this.userDefined = this.storage.has(USERNAME_SESSION_KEY);
-    if(!this.userDefined) {
-    this.http.post("/createUser",{sessionId: this.sessionId})
-    .subscribe(
-        (val: any) => {
-            console.log("Name is now"+val.name); 
-            this.userName = val.name;         
-        },
-        response => {
-            console.log("POST call in error", response);
-        },
-        () => {
-        });
-      };
-//      this.storage.set(USERNAME_SESSION_KEY, "John Doe");
-//      console.log("User name:" + this.storage.get(USERNAME_SESSION_KEY))
 
     console.log("Starting Socket connection from User to Server")
     const socket = io("http://localhost:8080");
     socket.on('connect', () => {
-      console.log("Connected to socket");
+      console.log("Connected to socket with socket id:" + socket.id);
       console.log("Setting room id to : " + this.sessionId);
       socket.emit('sessionRoom', this.sessionId);
+
+      if(!this.userDefined) {
+        this.http.post("/createUser",{sessionId: this.sessionId, socketId: socket.id})
+        .subscribe(
+            (val: any) => {
+                console.log("Name is now: "+val.name); 
+                this.userName = val.name;         
+            },
+            response => {
+                console.log("POST call in error", response);
+            },
+            () => {
+            });
+          };
     });
 
     socket.on('status', function(data) {
