@@ -4,7 +4,7 @@ import * as io from 'socket.io-client';
 import { Inject, Injectable } from '@angular/core';
 import { SESSION_STORAGE, StorageService } from 'ngx-webstorage-service';
 import { HttpClient } from '@angular/common/http';
-import { Session, User } from "./../model/";
+import { Session, User, VotingState } from "./../model/";
 
 const USERNAME_SESSION_KEY = 'UserInfo';
 
@@ -18,7 +18,11 @@ export class PlanningSessionComponent implements OnInit {
   sessionName:string;
   userDefined:boolean;
   userName:string;
+  userId:string;
   session:Session;
+  startVotingDisabled: boolean;
+  stopVotingDisabled: boolean;
+  resetVotingDisabled: boolean;
 
   constructor(private _Activatedroute:ActivatedRoute, @Inject(SESSION_STORAGE) private storage: StorageService, private http: HttpClient) { 
       this._Activatedroute.paramMap.subscribe(params => { 
@@ -26,6 +30,79 @@ export class PlanningSessionComponent implements OnInit {
       console.log("Room Session Id:" + this.sessionId);
       this.session = new Session("", "");
     });
+  }
+
+  startVotingForm(): void {
+    this.http.post("/startVoting",this.session)
+    .subscribe(
+        (val: any) => {            
+        },
+        response => {
+            console.log("POST call in error", response);
+        },
+        () => {
+        });
+  }
+
+  stopVotingForm(): void {
+    this.http.post("/stopVoting",this.session)
+    .subscribe(
+        (val: any) => {            
+        },
+        response => {
+            console.log("POST call in error", response);
+        },
+        () => {
+        });
+  }
+
+  resetVotingForm(): void {
+    this.http.post("/resetVoting",this.session)
+    .subscribe(
+        (val: any) => {            
+        },
+        response => {
+            console.log("POST call in error", response);
+        },
+        () => {
+        });
+  }
+
+  voteForm(frmElement): void {
+    let cardValue = frmElement.form.value.valueName;
+    console.log(cardValue);
+    this.http.post("/vote",{sessionId: this.sessionId, userId: this.userId, cardValue: cardValue})
+    .subscribe(
+        (val: any) => {
+        },
+        response => {
+            console.log("POST call in error", response);
+        },
+        () => {
+        });
+  }
+
+  setButtonState(state: VotingState): void {
+    switch(state) {
+      case VotingState.WaitingToVote:
+        this.startVotingDisabled = false;
+        this.stopVotingDisabled = true;
+        this.resetVotingDisabled = true;
+        break;
+
+      case VotingState.Voting:
+        this.startVotingDisabled = true;
+        this.stopVotingDisabled = false;
+        this.resetVotingDisabled = false;
+        break;
+
+      case VotingState.Result:
+        this.startVotingDisabled = false;
+        this.stopVotingDisabled = true;
+        this.resetVotingDisabled = false;
+        break;
+      
+    }
   }
 
   ngOnInit(): void {
@@ -42,7 +119,8 @@ export class PlanningSessionComponent implements OnInit {
         .subscribe(
             (val: any) => {
                 console.log("Name is now: "+val.name); 
-                this.userName = val.name;         
+                this.userName = val.name; 
+                this.userId = val.id;        
             },
             response => {
                 console.log("POST call in error", response);
@@ -57,6 +135,7 @@ export class PlanningSessionComponent implements OnInit {
       console.log(this.session);
       console.log("Session name before:" + this.sessionName);
       this.sessionName = this.session.name;
+      this.setButtonState(this.session.state);
     });
   }
 }

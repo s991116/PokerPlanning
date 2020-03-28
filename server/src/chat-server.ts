@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
 import * as http from "http";
-import { Session, User } from "./model";
+import { Session, User, VotingState } from "./model";
 import path from "path";
 import { v4 as uuidv4 } from "uuid";
 
@@ -41,26 +41,21 @@ export class ChatServer {
     let userName = "User"+session.users.length;
     let user = new User(uuidv4(), userName, socketId);
     session.users.push(user);
-
     return user;
   }
 
   private removeDisconnectedUser(socket: SocketIO.Socket) : void {
     let sessionId = this.socketIdWithSession[socket.id];
-    if(sessionId === undefined)
+    if(sessionId)
     { 
-      return;
+      let users = this.sessions[sessionId].users;
+      if(users) {
+        users.forEach( (item, index) => {
+          if(item.socketId === socket.id) users.splice(index,1);
+        });
+        socket.in(sessionId).emit("status",this.sessions[sessionId]);
+      }
     }
-    let users = this.sessions[sessionId].users;
-    if(users === undefined) {
-      return;
-    }
-
-    users.forEach( (item, index) => {
-      if(item.socketId === socket.id) users.splice(index,1);
-    });
-
-    socket.in(sessionId).emit("status",this.sessions[sessionId]);
   }
 
   private createApp(): void {
@@ -83,17 +78,101 @@ export class ChatServer {
       let sessionId = req.body.sessionId;
       let socketId = req.body.socketId;
 
-      if(this.sessions[sessionId] === undefined)
+      if(this.sessions[sessionId])
+      {
+        let user = this.createNewUser(sessionId, socketId);
+        this.io.in(sessionId).emit("status", this.sessions[sessionId]);
+        res.json(user);  
+      }
+      else
       {
           res.status(400).json({
             status: 'error',
             error: 'sessionId do not exists',
           });
       }
-      else {
-        let user = this.createNewUser(sessionId, socketId);
-        this.io.in(sessionId).emit("status", this.sessions[sessionId]);
-        res.json(user);  
+    });
+
+    this.app.post('/startVoting', (req, res) => {
+      let sessionId = req.body.id;
+      if(this.sessions[sessionId]) {
+        let session = this.sessions[sessionId];
+        session.state = VotingState.Voting;
+        this.io.in(sessionId).emit("status",this.sessions[sessionId]);
+        res.json(session);
+      }
+      else
+      {
+          res.status(400).json({
+            status: 'error',
+            error: 'sessionId do not exists',
+          });
+      }
+    });
+
+    this.app.post('/stopVoting', (req, res) => {
+      let sessionId = req.body.id;
+      if(this.sessions[sessionId]) {
+        let session = this.sessions[sessionId];
+        session.state = VotingState.Result;
+        this.io.in(sessionId).emit("status",this.sessions[sessionId]);
+        res.json(session);
+      }
+      else
+      {
+          res.status(400).json({
+            status: 'error',
+            error: 'sessionId do not exists',
+          });
+      }
+    });
+
+    this.app.post('/resetVoting', (req, res) => {
+      let sessionId = req.body.id;
+      if(this.sessions[sessionId]) {
+        let session = this.sessions[sessionId];
+        session.state = VotingState.WaitingToVote;
+        this.io.in(sessionId).emit("status",this.sessions[sessionId]);
+        res.json(session);
+      }
+      else
+      {
+          res.status(400).json({
+            status: 'error',
+            error: 'sessionId do not exists',
+          });
+      }
+    });
+
+    this.app.post('/vote', (req, res) => {
+      console.log(req.body);
+      let sessionId = req.body.sessionId;
+      let userId = req.body.userId;
+      console.log(userId);
+      let cardValue = req.body.cardValue;
+      let session = this.sessions[sessionId];
+      if(session) {
+        let user = session.users.find(i => i.id === userId);
+        if(user) {
+          user.card = cardValue;
+          user.played = true;
+          this.io.in(sessionId).emit("status",this.sessions[sessionId]);
+          res.json(session);  
+        }
+        else
+        {
+            res.status(400).json({
+              status: 'error',
+              error: 'sessionId do not exists',
+            });
+        }
+      }
+      else
+      {
+          res.status(400).json({
+            status: 'error',
+            error: 'sessionId do not exists',
+          });
       }
     });
 

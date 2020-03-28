@@ -7,18 +7,18 @@ import {Router } from '@angular/router';
   templateUrl: './create-session.component.html',
   styleUrls: ['./create-session.component.css']
 })
+
 export class CreateSessionComponent {
 
   constructor(private http: HttpClient, private router: Router) {
   }
 
   submitForm(frmElement) {
-
     this.http.post("/createSession",frmElement.form.value)
     .subscribe(
         (val: any) => {
-            let sessionURL = "session/"+ val.sessionId
-            this.router.navigate([sessionURL]);            
+          let sessionURL = "session/"+ val.sessionId
+          this.router.navigate([sessionURL]);            
         },
         response => {
             console.log("POST call in error", response);
