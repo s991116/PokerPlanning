@@ -78,12 +78,14 @@ export class Routes {
     public routes(app:any): void {   
 
         var htmlPath = path.resolve(__dirname + "./../../../client/dist/client/");        
+        
+        app.route('*.*').get(express.static(htmlPath, {maxAge: '1y'}));
 
-        app.route('/').get(function (req:any, res:any) {
+        app.route('/').get((req:any, res:any) => {
             res.status(200).sendFile(`/`, {root: htmlPath});
         });
 
-        app.route('/session/*').get(function (req:any, res:any) {
+        app.route('/session/*').get((req:any, res:any) => {
             res.status(200).sendFile(`/`, {root: htmlPath});
         });
         
