@@ -1,6 +1,5 @@
 import {Request, Response, IRoute} from "express";
 import express from "express";
-import * as http from "http";
 import path from "path";
 import { v4 as uuidv4 } from "uuid";
 import { Session, User, VotingState } from "./../model";
@@ -10,7 +9,7 @@ export class Routes {
     private io: SocketIO.Server;
     private sessions : { [key: string]: Session }
     private socketIdWithSession : { [sessionId: string]: string}
-    private port: string | number;
+    public port: string | number;
 
     public static readonly PORT:number = 8080;
 
@@ -53,12 +52,8 @@ export class Routes {
         }
       }
     }
-    
-    private listen(server: any): void {
-      server.listen(Routes.PORT, () => {
-          console.log("Express server listening on port " + Routes.PORT);
-      });
-    
+
+    private socketRouting() {
       this.io.on('connection', socket => {
         socket.on('sessionRoom', (sessionRoomID) => {
           socket.join(sessionRoomID);
@@ -70,13 +65,13 @@ export class Routes {
       });
     }
 
-    public sockets(server:any): void {
+    private sockets(server:any): void {
         this.io = require("socket.io").listen(server, { origins: '*:*'});
-        this.listen(server);
     }
     
-    public routes(app:any): void {   
-
+    public routes(app: any, server: any): void {   
+        this.sockets(server);
+        this.socketRouting();
         var htmlPath = path.resolve(__dirname + "./../../../client/dist/client/");        
         
         app.route('*.*').get(express.static(htmlPath, {maxAge: '1y'}));
