@@ -1,4 +1,4 @@
-import { ChatServer } from './chat-server';
+import { PokerServer } from './poker-server';
 
-let app = new ChatServer().getApp();
+let app = new PokerServer().getApp();
 export { app };

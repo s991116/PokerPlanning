@@ -9,7 +9,7 @@ const morgan = require("morgan");
 
 var bodyParser = require("body-parser");
 
-export class ChatServer {
+export class PokerServer {
   public static readonly PORT:number = 8080;
   private app: express.Application;
   private server: http.Server;
@@ -183,7 +183,7 @@ export class ChatServer {
   }
 
   private config(): void {
-    this.port = process.env.PORT || ChatServer.PORT;
+    this.port = process.env.PORT || PokerServer.PORT;
   }
 
   private sockets(): void {
