@@ -4,6 +4,7 @@ import * as http from "http";
 import { Session, User, VotingState } from "./model";
 import path from "path";
 import { v4 as uuidv4 } from "uuid";
+import { Routes } from "./routes/pokerRoutes";
 
 const morgan = require("morgan");
 
@@ -11,6 +12,8 @@ var bodyParser = require("body-parser");
 
 export class PokerServer {
   public static readonly PORT:number = 8080;
+  public routePrv: Routes = new Routes();
+
   private app: express.Application;
   private server: http.Server;
   private io: SocketIO.Server;
@@ -26,6 +29,7 @@ export class PokerServer {
     this.listen();
     this.sessions = {};
     this.socketIdWithSession = {};
+    this.routePrv.routes(this.app); 
   }
 
   private createNewSession(name: string) : string {
@@ -60,12 +64,9 @@ export class PokerServer {
 
   private createApp(): void {
     this.app = express();
-    this.app.use(morgan("dev"));
+    this.app.use(morgan("common"));
     this.app.use(cors());
     this.app.use(bodyParser.json())
-
-    var htmlPath = path.resolve(__dirname + "./../../client/dist/client/");
-    this.app.get('*.*', express.static(htmlPath, {maxAge: '1y'}));
     
     this.app.post('/createSession', (req, res) => {
       let sessionId = this.createNewSession(req.body.sessionName);
@@ -172,10 +173,6 @@ export class PokerServer {
           });
       }
     });
-
-    this.app.all('*', function (req, res) {
-      res.status(200).sendFile(`/`, {root: htmlPath});
-  });
   }
 
   private createServer(): void {
