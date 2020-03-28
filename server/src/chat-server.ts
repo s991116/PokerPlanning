@@ -5,6 +5,8 @@ import { Session, User, VotingState } from "./model";
 import path from "path";
 import { v4 as uuidv4 } from "uuid";
 
+const morgan = require("morgan");
+
 var bodyParser = require("body-parser");
 
 export class ChatServer {
@@ -36,8 +38,6 @@ export class ChatServer {
     this.socketIdWithSession[socketId] = sessionId;
 
     let session = this.sessions[sessionId];
-    console.log("SessionId to look for users:"+sessionId);
-    console.log(session);
     let userName = "User"+session.users.length;
     let user = new User(uuidv4(), userName, socketId);
     session.users.push(user);
@@ -60,6 +60,7 @@ export class ChatServer {
 
   private createApp(): void {
     this.app = express();
+    this.app.use(morgan("dev"));
     this.app.use(cors());
     this.app.use(bodyParser.json())
 
@@ -68,13 +69,11 @@ export class ChatServer {
     
     this.app.post('/createSession', (req, res) => {
       let sessionId = this.createNewSession(req.body.sessionName);
-      console.log("Created session with ID:" + sessionId);
       this.io.in(sessionId).emit("status", this.sessions[sessionId]);
       res.json({ sessionId: sessionId });
     });
 
     this.app.post('/createUser', (req, res) => {
-      console.log(req.body);
       let sessionId = req.body.sessionId;
       let socketId = req.body.socketId;
 
@@ -145,10 +144,8 @@ export class ChatServer {
     });
 
     this.app.post('/vote', (req, res) => {
-      console.log(req.body);
       let sessionId = req.body.sessionId;
       let userId = req.body.userId;
-      console.log(userId);
       let cardValue = req.body.cardValue;
       let session = this.sessions[sessionId];
       if(session) {
@@ -195,17 +192,13 @@ export class ChatServer {
 
   private listen(): void {
     this.server.listen(this.port, () => {
-      console.log("Running server on port %s", this.port);
     });
 
     this.io.on('connection', socket => {
-      console.log("User connected to soccket, with socket id:" + socket.id);
       socket.on('sessionRoom', (sessionRoomID) => {
-          console.log("User joined Room:" + sessionRoomID);
           socket.join(sessionRoomID);
       });
       socket.on('disconnect', () => {
-        console.log("Disconnection from user, with socket id:" + socket.id);
         this.removeDisconnectedUser(socket);
       });
     });
