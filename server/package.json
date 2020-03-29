@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@types/cors": "^2.8.6",
+    "@types/mongoose": "^5.7.8",
     "@types/node": "^13.7.0",
     "@types/socket.io": "^2.1.4",
     "@types/uuid": "^7.0.2",
@@ -27,6 +28,7 @@
     "gulp-livereload": "4.0.2",
     "gulp-nodemon": "^2.4.2",
     "gulp-typescript": "3.2.4",
+    "mongoose": "^5.9.6",
     "morgan": "^1.10.0",
     "path": "^0.12.7",
     "socket.io": "^2.3.0",
