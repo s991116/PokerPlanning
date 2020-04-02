@@ -10,11 +10,11 @@ export class PokerServer {
   public routePrv: Routes = new Routes();
   public server: http.Server;
   private app: express.Application;
- 
+
   constructor() {
     this.createApp();
     this.createServer();
-    this.routePrv.routes(this.app, this.server); 
+    this.routePrv.routes(this.app, this.server);
     this.listen();
   }
 
@@ -26,12 +26,12 @@ export class PokerServer {
     this.app = express();
     this.app.use(morgan("common"));
     this.app.use(cors());
-    this.app.use(bodyParser.json())
+    this.app.use(bodyParser.json());
   }
 
   private listen(): void {
     this.server.listen(this.routePrv.port, () => {
-        console.log("Express server listening on port " + this.routePrv.port);
+      console.log("Express server listening on port " + this.routePrv.port);
     });
   }
 

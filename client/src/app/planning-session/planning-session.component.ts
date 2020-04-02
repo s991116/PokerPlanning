@@ -107,18 +107,14 @@ export class PlanningSessionComponent implements OnInit {
 
   ngOnInit(): void {
     this.userDefined = this.storage.has(USERNAME_SESSION_KEY);
-    console.log("Starting Socket connection from User to Server")
     const socket = io("http://localhost:8080");
     socket.on('connect', () => {
-      console.log("Connected to socket with socket id:" + socket.id);
-      console.log("Setting room id to : " + this.sessionId);
       socket.emit('sessionRoom', this.sessionId);
 
       if(!this.userDefined) {
         this.http.post("/createUser",{sessionId: this.sessionId, socketId: socket.id})
         .subscribe(
             (val: any) => {
-                console.log("Name is now: "+val.name); 
                 this.userName = val.name; 
                 this.userId = val.id;        
             },
@@ -132,8 +128,6 @@ export class PlanningSessionComponent implements OnInit {
 
     socket.on('status', (data) => {
       this.session = data as Session;
-      console.log(this.session);
-      console.log("Session name before:" + this.sessionName);
       this.sessionName = this.session.name;
       this.setButtonState(this.session.state);
     });
