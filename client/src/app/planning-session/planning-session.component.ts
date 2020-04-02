@@ -4,7 +4,7 @@ import * as io from 'socket.io-client';
 import { Inject, Injectable } from '@angular/core';
 import { SESSION_STORAGE, StorageService } from 'ngx-webstorage-service';
 import { HttpClient } from '@angular/common/http';
-import { Session, User, VotingState } from "./../model/";
+import { Session, VotingState } from "./../model/";
 
 const USERNAME_SESSION_KEY = 'UserInfo';
 

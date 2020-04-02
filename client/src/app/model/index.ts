@@ -1,3 +1,3 @@
-export { Session } from './session';
 export { User } from './user';
-export { VotingState } from './VotingState'
+export { VotingState } from './votingState'
+export { Session } from './session';
