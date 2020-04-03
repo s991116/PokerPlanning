@@ -23,7 +23,7 @@ jobs:
     - name: npm install, build, and test client
       run: |
           npm  install
-          npm --prefix ./client/ run build_notest:ci
+          npm run buildAndDeploy
 
 #          npm --prefix ./client/ install
 

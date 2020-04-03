@@ -4,7 +4,8 @@
   "description": "Estimation with Planning Poker a WebSocket solution ===================================================",
   "main": "index.js",
   "scripts": {
-    "start": "node ./server/dist/index.js"
+    "start": "node ./server/dist/index.js",
+    "buildAndDeploy": "./buildAndDeploy.sh"
   },
   "dependencies": {
     "express": "^4.17.1"
