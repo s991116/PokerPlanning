@@ -1,77 +1,77 @@
-<p>Planning Session: {{session.name}}</p>
-
-<div class="md-form">
-    <label for="userName">Your name</label>
-    <input mdbInput placeholder="{{userName}}" type="text" id="userName" class="form-control">
+<div [hidden]="sessionExists">
+  Create new Session, this session do not exists.
 </div>
 
-<p>Users</p>
-<ul>
+<div [hidden]="!sessionExists">
+  <p>Planning Session: {{ session.name }}</p>
+
+  <div class="md-form">
+    <label for="userName">Your name</label>
+    <input
+      mdbInput
+      placeholder="{{ userName }}"
+      type="text"
+      id="userName"
+      class="form-control"
+    />
+  </div>
+
+  <p>Users</p>
+  <ul>
     <li *ngFor="let user of session.users">
       {{ user.name }}
     </li>
-</ul>
+  </ul>
 
-<form
-    name="startVotingForm"
-    (ngSubmit)="startVotingForm()"
-  >
-  <button
-    type="submit"
-    class="btn btn-primary"
-    [disabled]="startVotingDisabled"
-  >
-    Start Voting
-  </button>
-</form>
-<form
-    name="stopVotingForm"
-    (ngSubmit)="stopVotingForm()"
-  >
-  <button
-    type="submit"
-    class="btn btn-primary"
-    [disabled]="stopVotingDisabled"
-  >
-    Stop Voting
-  </button>
-</form>
+  <form name="startVotingForm" (ngSubmit)="startVotingForm()">
+    <button
+      type="submit"
+      class="btn btn-primary"
+      [disabled]="startVotingDisabled"
+    >
+      Start Voting
+    </button>
+  </form>
+  <form name="stopVotingForm" (ngSubmit)="stopVotingForm()">
+    <button
+      type="submit"
+      class="btn btn-primary"
+      [disabled]="stopVotingDisabled"
+    >
+      Stop Voting
+    </button>
+  </form>
 
-<form
-    name="resetVotingForm"
-    (ngSubmit)="resetVotingForm()"
-  >
-  <button
-    type="submit"
-    class="btn btn-primary"
-    [disabled]="resetVotingDisabled"
-  >
-    New Voting
-  </button>
-</form>
+  <form name="resetVotingForm" (ngSubmit)="resetVotingForm()">
+    <button
+      type="submit"
+      class="btn btn-primary"
+      [disabled]="resetVotingDisabled"
+    >
+      New Voting
+    </button>
+  </form>
 
-<form
-name="voteForm"
-#userForm="ngForm"
-(ngSubmit)="voteForm(userForm)"
-#sessionForm="ngForm"
->
-<div class="form-group">
-  <label for="valueName">Value</label>
-  <input
-    type="text"
-    class="form-control"
-    name="valueName"
-    #cardValue="ngModel"
-    required
-    ngModel
-    name="valueName"
-  />
+  <form
+    name="voteForm"
+    #userForm="ngForm"
+    (ngSubmit)="voteForm(userForm)"
+    #sessionForm="ngForm"
+  >
+    <div class="form-group">
+      <label for="valueName">Value</label>
+      <input
+        type="text"
+        class="form-control"
+        name="valueName"
+        #cardValue="ngModel"
+        required
+        ngModel
+        name="valueName"
+      />
+    </div>
+    <button type="submit" class="btn btn-primary">
+      Submit Vote
+    </button>
+  </form>
 </div>
-<button
-  type="submit"
-  class="btn btn-primary"
->
-  Submit Vote
-</button>
-</form>
