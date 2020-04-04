@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import * as http from "http";
 import { Routes } from "./routes/pokerRoutes";
+import path from 'path';
 
 const morgan = require("morgan");
 const bodyParser = require("body-parser");
@@ -31,7 +32,10 @@ export class PokerServer {
 
   private listen(): void {
     this.server.listen(this.routePrv.port, () => {
-      console.log("Express server listening on port " + this.routePrv.port);
+      var htmlPath = path.resolve(__dirname + "./../../../client/dist/client/");
+      console.log("Path for client: " + htmlPath);
+
+      console.log("Express server is now listening on port " + this.routePrv.port);
     });
   }
 

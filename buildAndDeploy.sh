@@ -6,3 +6,4 @@ npm --prefix ./client/ run build_notest:ci
 
 echo "Server setup"
 npm --prefix ./server/ install
+npm --prefix ./server/ run build
