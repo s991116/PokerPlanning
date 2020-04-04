@@ -107,7 +107,7 @@ export class PlanningSessionComponent implements OnInit {
 
   ngOnInit(): void {
     this.userDefined = this.storage.has(USERNAME_SESSION_KEY);
-    const socket = io("http://localhost:8080");
+    const socket = io();
     socket.on('connect', () => {
       socket.emit('sessionRoom', this.sessionId);
 
