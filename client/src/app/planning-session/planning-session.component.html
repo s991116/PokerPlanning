@@ -1,77 +1,98 @@
-<div [hidden]="sessionExists">
-  Create new Session, this session do not exists.
-</div>
-
-<div [hidden]="!sessionExists">
-  <p>Planning Session: {{ session.name }}</p>
-
-  <div class="md-form">
-    <label for="userName">Your name</label>
-    <input
-      mdbInput
-      placeholder="{{ userName }}"
-      type="text"
-      id="userName"
-      class="form-control"
-    />
-  </div>
-
-  <p>Users</p>
-  <ul>
-    <li *ngFor="let user of session.users">
-      {{ user.name }}
-    </li>
-  </ul>
-
-  <form name="startVotingForm" (ngSubmit)="startVotingForm()">
-    <button
-      type="submit"
-      class="btn btn-primary"
-      [disabled]="startVotingDisabled"
-    >
-      Start Voting
-    </button>
-  </form>
-  <form name="stopVotingForm" (ngSubmit)="stopVotingForm()">
-    <button
-      type="submit"
-      class="btn btn-primary"
-      [disabled]="stopVotingDisabled"
-    >
-      Stop Voting
-    </button>
-  </form>
-
-  <form name="resetVotingForm" (ngSubmit)="resetVotingForm()">
-    <button
-      type="submit"
-      class="btn btn-primary"
-      [disabled]="resetVotingDisabled"
-    >
-      New Voting
-    </button>
-  </form>
-
-  <form
-    name="voteForm"
-    #userForm="ngForm"
-    (ngSubmit)="voteForm(userForm)"
-    #sessionForm="ngForm"
-  >
-    <div class="form-group">
-      <label for="valueName">Value</label>
-      <input
-        type="text"
-        class="form-control"
-        name="valueName"
-        #cardValue="ngModel"
-        required
-        ngModel
-        name="valueName"
-      />
+<div class="container-fluid">
+  <div [hidden]="sessionExists">
+    <div class="row">
+      This Session Do Not Exists.
     </div>
-    <button type="submit" class="btn btn-primary">
-      Submit Vote
-    </button>
-  </form>
+  </div>
+  <div [hidden]="!sessionExists">
+    <div class="row">
+      <div class="col-lg-8">Planning Session: {{ session.name }}</div>
+      <div class="col-lg-4"><button (click)="copyURLToClipboard()">Copy Session URL To Clipboard (ToDo)</button></div>
+    </div>
+    <div class="row">
+      <div class="col-lg-8">Your name: {{ userName }}</div>
+    </div>
+    <div class="row">
+      <div class="col-lg-8">
+        <ul class="list-group">
+          <li
+            *ngFor="let user of session.users"
+            class="list-group-item d-flex justify-content-between align-items-center"
+          >
+            {{ user.name }}
+            <span
+              [hidden]="session.state == 3"
+              class="badge badge-primary badge-pill"
+            >
+              ?
+            </span>
+            <span
+              [hidden]="session.state != 3"
+              class="badge badge-primary badge-pill"
+            >
+              {{ user.card }}</span
+            >
+          </li>
+        </ul>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-lg-8">
+        <form
+          name="voteForm"
+          #userForm="ngForm"
+          (ngSubmit)="voteForm(userForm)"
+          #sessionForm="ngForm"
+        >
+          <div class="form-group">
+            <label for="valueName">Value</label>
+            <input
+              type="text"
+              class="form-control"
+              name="valueName"
+              #cardValue="ngModel"
+              required
+              ngModel
+              name="valueName"
+            />
+          </div>
+          <button type="submit" class="btn btn-primary">
+            Submit Vote
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <form name="startVotingForm" (ngSubmit)="startVotingForm()">
+      <button
+        type="submit"
+        class="btn btn-primary"
+        [disabled]="startVotingDisabled"
+      >
+        Start Voting
+      </button>
+    </form>
+    <form name="stopVotingForm" (ngSubmit)="stopVotingForm()">
+      <button
+        type="submit"
+        class="btn btn-primary"
+        [disabled]="stopVotingDisabled"
+      >
+        Stop Voting
+      </button>
+    </form>
+
+    <form name="resetVotingForm" (ngSubmit)="resetVotingForm()">
+      <button
+        type="submit"
+        class="btn btn-primary"
+        [disabled]="resetVotingDisabled"
+      >
+        New Voting
+      </button>
+    </form>
+  </div>
+  <div class="row">
+    <a routerLink="/" routerLinkActive="active">Start Creating New Session</a>
+  </div>
 </div>

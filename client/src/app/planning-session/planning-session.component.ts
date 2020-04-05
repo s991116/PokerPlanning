@@ -1,7 +1,7 @@
 import { Component, OnInit } from "@angular/core";
-import { ActivatedRoute } from "@angular/router";
+import { ActivatedRoute} from "@angular/router";
 import * as io from "socket.io-client";
-import { Inject, Injectable } from "@angular/core";
+import { Inject } from "@angular/core";
 import { SESSION_STORAGE, StorageService } from "ngx-webstorage-service";
 import { HttpClient } from "@angular/common/http";
 import { Session, VotingState } from "./../model/";
@@ -28,7 +28,7 @@ export class PlanningSessionComponent implements OnInit {
   constructor(
     private _Activatedroute: ActivatedRoute,
     @Inject(SESSION_STORAGE) private storage: StorageService,
-    private http: HttpClient
+    private http: HttpClient,
   ) {
     this._Activatedroute.paramMap.subscribe(params => {
       this.sessionId = params.get("id");
@@ -106,6 +106,11 @@ export class PlanningSessionComponent implements OnInit {
         this.resetVotingDisabled = false;
         break;
     }
+  }
+
+  copyURLToClipboard(): void {
+    console.log("Button clicked");
+    console.log(window.location.href);
   }
 
   ngOnInit(): void {

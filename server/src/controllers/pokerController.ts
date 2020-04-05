@@ -97,6 +97,11 @@ export class PokerController {
     if (this.sessions[sessionId]) {
       let session = this.sessions[sessionId];
       session.state = VotingState.WaitingToVote;
+      session.users.forEach((user) => {
+        user.card = 0;
+        user.played = false;
+      });
+
       io.in(sessionId).emit("status", this.sessions[sessionId]);
       res.json(session);
     } else {
