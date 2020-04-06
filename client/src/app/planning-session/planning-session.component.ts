@@ -4,7 +4,7 @@ import * as io from "socket.io-client";
 import { Inject } from "@angular/core";
 import { SESSION_STORAGE, StorageService } from "ngx-webstorage-service";
 import { HttpClient } from "@angular/common/http";
-import { Session, VotingState } from "./../model/";
+import { Session, VotingState, Card, CardDeck } from "./../model/";
 import { ClipboardService } from "ngx-clipboard";
 
 const USERNAME_SESSION_KEY = "UserInfo";
@@ -25,12 +25,14 @@ export class PlanningSessionComponent implements OnInit {
   startVotingDisabled: boolean;
   stopVotingDisabled: boolean;
   resetVotingDisabled: boolean;
+  cardDeck: CardDeck;
 
   card = null;
+
   cards = [
-    { name: "100", value: 100},
-    { name: "200", value: 200},
-    { name: "500", value: 500}
+    { name: "100", value: 100 },
+    { name: "200", value: 200 },
+    { name: "500", value: 500 }
   ];
 
   constructor(
@@ -77,7 +79,7 @@ export class PlanningSessionComponent implements OnInit {
     );
   }
 
-  onCardSelected(value: string) :void {
+  onCardSelected(value: string): void {
     console.log(value);
     this.http
       .post("/vote", {
@@ -125,6 +127,10 @@ export class PlanningSessionComponent implements OnInit {
     const socket = io();
     socket.on("connect", () => {
       socket.emit("sessionRoom", this.sessionId);
+
+      this.http.get("/template/businesscards").subscribe((cardDeck: CardDeck) => {
+        this.cardDeck = cardDeck;
+      });
 
       if (!this.userDefined) {
         this.http

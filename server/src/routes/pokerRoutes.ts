@@ -37,15 +37,15 @@ export class Routes {
 
     app.route("*.*").get(express.static(htmlPath, { maxAge: "1h" }));
 
-    app.route("/").get((req: any, res: any) => {
+    app.route("/").get((req: Request, res: Response) => {
       res.status(200).sendFile(`/`, { root: htmlPath });
     });
 
-    app.route("/session/*").get((req: any, res: any) => {
+    app.route("/session/*").get((req: Request, res: Response) => {
       res.status(200).sendFile(`/`, { root: htmlPath });
     });
 
-    app.route("/template/businesscards").get((req: any, res: any) => {
+    app.route("/template/businesscards").get((req: Request, res: Response) => {
       this.pokerController.getCardDeck(req, res);
     });
 
@@ -57,19 +57,19 @@ export class Routes {
       this.pokerController.createUser(req, res, this.io);
     });
 
-    app.route("/startVoting").post((req: any, res: any) => {
+    app.route("/startVoting").post((req: Request, res: Response) => {
       this.pokerController.startVoting(req, res, this.io);
     });
 
-    app.route("/stopVoting").post((req: any, res: any) => {
+    app.route("/stopVoting").post((req: Request, res: Response) => {
       this.pokerController.stopVoting(req, res, this.io);
     });
 
-    app.route("/resetVoting").post((req: any, res: any) => {
+    app.route("/resetVoting").post((req: Request, res: Response) => {
       this.pokerController.resetVoting(req, res, this.io);
     });
 
-    app.route("/vote").post((req: any, res: any) => {
+    app.route("/vote").post((req: Request, res: Response) => {
       this.pokerController.vote(req, res, this.io);
     });
   }

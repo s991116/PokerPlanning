@@ -147,6 +147,6 @@ export class PokerController {
   }
 
   public getCardDeck(req: Request, res: Response) {
-    res.json({cardDeck: this.cardDeck});
+    res.json(JSON.stringify(this.cardDeck));
   }
 }
