@@ -45,14 +45,13 @@
         <div class="row">
           <div class="col">
             <select
-              name="card"
-              ngModel
+              name="cardDeck" ngModel
               class="form-control"
               #mySelect
               (change)="onCardSelected(mySelect.selectedIndex)"
             >
               <option value="" disabled>Select BusinesValue-Card</option>
-              <option *ngFor="let card of cards" [ngValue]="card.name">
+              <option [ngValue]="cards"  *ngFor="let card of cards">
                 {{ card.name }}
               </option>
             </select>

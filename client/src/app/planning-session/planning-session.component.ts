@@ -25,15 +25,7 @@ export class PlanningSessionComponent implements OnInit {
   startVotingDisabled: boolean;
   stopVotingDisabled: boolean;
   resetVotingDisabled: boolean;
-  cardDeck: CardDeck;
-
-  card = null;
-
-  cards = [
-    { name: "100", value: 100 },
-    { name: "200", value: 200 },
-    { name: "500", value: 500 }
-  ];
+  cards: Card[];
 
   constructor(
     private _Activatedroute: ActivatedRoute,
@@ -128,8 +120,9 @@ export class PlanningSessionComponent implements OnInit {
     socket.on("connect", () => {
       socket.emit("sessionRoom", this.sessionId);
 
-      this.http.get("/template/businesscards").subscribe((cardDeck: CardDeck) => {
-        this.cardDeck = cardDeck;
+      this.http.get("/template/businesscards").subscribe((cardDeckJson: string) => {
+        let cardDeck:CardDeck = JSON.parse(cardDeckJson);
+        this.cards = cardDeck.cards;
       });
 
       if (!this.userDefined) {
