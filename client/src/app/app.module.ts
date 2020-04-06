@@ -25,6 +25,7 @@ import { PlanningSessionComponent } from './planning-session/planning-session.co
 
 import { StorageServiceModule } from 'ngx-webstorage-service';
 
+import { ClipboardModule } from 'ngx-clipboard';
 
 export function HttpLoaderFactory(http: HttpClient) {
   return new TranslateHttpLoader(http);
@@ -56,7 +57,8 @@ export function HttpLoaderFactory(http: HttpClient) {
         deps: [HttpClient]
       }
     }),
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    ClipboardModule
   ],
   providers: [
   ],

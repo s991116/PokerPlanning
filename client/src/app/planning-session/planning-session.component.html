@@ -7,7 +7,11 @@
   <div [hidden]="!sessionExists">
     <div class="row">
       <div class="col-lg-8">Planning Session: {{ session.name }}</div>
-      <div class="col-lg-4"><button (click)="copyURLToClipboard()">Copy Session URL To Clipboard (ToDo)</button></div>
+      <div class="col-lg-4">
+        <button (click)="copyURLToClipboard()">
+          Copy Session URL To Clipboard
+        </button>
+      </div>
     </div>
     <div class="row">
       <div class="col-lg-8">Your name: {{ userName }}</div>
@@ -38,28 +42,22 @@
     </div>
     <div class="row">
       <div class="col-lg-8">
-        <form
-          name="voteForm"
-          #userForm="ngForm"
-          (ngSubmit)="voteForm(userForm)"
-          #sessionForm="ngForm"
-        >
-          <div class="form-group">
-            <label for="valueName">Value</label>
-            <input
-              type="text"
-              class="form-control"
-              name="valueName"
-              #cardValue="ngModel"
-              required
+        <div class="row">
+          <div class="col">
+            <select
+              name="card"
               ngModel
-              name="valueName"
-            />
+              class="form-control"
+              #mySelect
+              (change)="onCardSelected(mySelect.selectedIndex)"
+            >
+              <option value="" disabled>Select BusinesValue-Card</option>
+              <option *ngFor="let card of cards" [ngValue]="card.name">
+                {{ card.name }}
+              </option>
+            </select>
           </div>
-          <button type="submit" class="btn btn-primary">
-            Submit Vote
-          </button>
-        </form>
+        </div>
       </div>
     </div>
 
@@ -92,7 +90,8 @@
       </button>
     </form>
   </div>
-  <div class="row">
-    <a routerLink="/" routerLinkActive="active">Start Creating New Session</a>
-  </div>
+
+  <a class="container-fluid" routerLink="/" routerLinkActive="active"
+    >Start Creating New Session</a
+  >
 </div>

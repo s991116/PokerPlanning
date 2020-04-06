@@ -35,7 +35,7 @@ export class Routes {
     this.socketRouting(server);
     var htmlPath = path.resolve(__dirname + "./../../../client/dist/client/");
 
-    app.route("*.*").get(express.static(htmlPath, { maxAge: "1y" }));
+    app.route("*.*").get(express.static(htmlPath, { maxAge: "1h" }));
 
     app.route("/").get((req: any, res: any) => {
       res.status(200).sendFile(`/`, { root: htmlPath });

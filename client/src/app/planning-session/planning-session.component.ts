@@ -1,10 +1,11 @@
 import { Component, OnInit } from "@angular/core";
-import { ActivatedRoute} from "@angular/router";
+import { ActivatedRoute } from "@angular/router";
 import * as io from "socket.io-client";
 import { Inject } from "@angular/core";
 import { SESSION_STORAGE, StorageService } from "ngx-webstorage-service";
 import { HttpClient } from "@angular/common/http";
 import { Session, VotingState } from "./../model/";
+import { ClipboardService } from "ngx-clipboard";
 
 const USERNAME_SESSION_KEY = "UserInfo";
 
@@ -25,10 +26,18 @@ export class PlanningSessionComponent implements OnInit {
   stopVotingDisabled: boolean;
   resetVotingDisabled: boolean;
 
+  card = null;
+  cards = [
+    { name: "100", value: 100},
+    { name: "200", value: 200},
+    { name: "500", value: 500}
+  ];
+
   constructor(
     private _Activatedroute: ActivatedRoute,
     @Inject(SESSION_STORAGE) private storage: StorageService,
-    private http: HttpClient,
+    private _clipboardService: ClipboardService,
+    private http: HttpClient
   ) {
     this._Activatedroute.paramMap.subscribe(params => {
       this.sessionId = params.get("id");
@@ -68,14 +77,13 @@ export class PlanningSessionComponent implements OnInit {
     );
   }
 
-  voteForm(frmElement): void {
-    let cardValue = frmElement.form.value.valueName;
-    console.log(cardValue);
+  onCardSelected(value: string) :void {
+    console.log(value);
     this.http
       .post("/vote", {
         sessionId: this.sessionId,
         userId: this.userId,
-        cardValue: cardValue
+        cardValue: value
       })
       .subscribe(
         (val: any) => {},
@@ -109,8 +117,7 @@ export class PlanningSessionComponent implements OnInit {
   }
 
   copyURLToClipboard(): void {
-    console.log("Button clicked");
-    console.log(window.location.href);
+    this._clipboardService.copyFromContent(window.location.href);
   }
 
   ngOnInit(): void {
