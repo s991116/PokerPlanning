@@ -1,7 +1,7 @@
 import * as mongoose from "mongoose";
 import { SessionSchema } from "../model/sessionModel";
 import { Request, Response } from "express";
-import { Session, User, VotingState } from "./../model";
+import { Session, User, VotingState, CardDeck, Card } from "./../model";
 import { v4 as uuidv4 } from "uuid";
 
 const Contact = mongoose.model("SessionSchema", SessionSchema);
@@ -9,6 +9,14 @@ const Contact = mongoose.model("SessionSchema", SessionSchema);
 export class PokerController {
   private sessions: { [key: string]: Session };
   private socketIdWithSession: { [sessionId: string]: string };
+  private cardDeck: CardDeck = new CardDeck([
+    new Card("0 Point", 0),
+    new Card("100 Point", 100),
+    new Card("200 Point", 200),
+    new Card("500 Point", 500),
+    new Card("1000 Point", 1000),
+    new Card("? Point", undefined),
+  ]);
 
   constructor() {
     this.sessions = {};
@@ -20,7 +28,7 @@ export class PokerController {
     let sessionId = session.id;
     this.sessions[sessionId] = session;
     io.in(sessionId).emit("status", this.sessions[sessionId]);
-    res.json({ sessionId: sessionId });
+    res.json({ sessionId: sessionId});
   }
 
   private createNewUser(sessionId: string, socketId: string): User {
@@ -97,8 +105,8 @@ export class PokerController {
     if (this.sessions[sessionId]) {
       let session = this.sessions[sessionId];
       session.state = VotingState.WaitingToVote;
-      session.users.forEach((user) => {
-        user.card = 0;
+      session.users.forEach(user => {
+        user.cardIndex = 0;
         user.played = false;
       });
 
@@ -120,7 +128,7 @@ export class PokerController {
     if (session) {
       let user = session.users.find((i: any) => i.id === userId);
       if (user) {
-        user.card = cardValue;
+        user.cardIndex = cardValue;
         user.played = true;
         io.in(sessionId).emit("status", this.sessions[sessionId]);
         res.json(session);
@@ -136,5 +144,9 @@ export class PokerController {
         error: "sessionId do not exists"
       });
     }
+  }
+
+  public getCardDeck(req: Request, res: Response) {
+    res.json({cardDeck: this.cardDeck});
   }
 }
