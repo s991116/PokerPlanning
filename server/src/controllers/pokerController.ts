@@ -11,11 +11,15 @@ export class PokerController {
   private socketIdWithSession: { [sessionId: string]: string };
   private cardDeck: CardDeck = new CardDeck([
     new Card("0 Point", 0),
-    new Card("100 Point", 100),
-    new Card("200 Point", 200),
-    new Card("500 Point", 500),
+    new Card("300 Point", 300),
+    new Card("600 Point", 600),
+    new Card("800 Point", 800),
+    new Card("900 Point", 900),
+    new Card("975 Point", 975),
+    new Card("990 Point", 990),
     new Card("1000 Point", 1000),
     new Card("? Point", undefined),
+    new Card("Trash", undefined),
   ]);
 
   constructor() {
