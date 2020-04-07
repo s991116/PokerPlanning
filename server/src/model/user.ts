@@ -9,7 +9,7 @@ export class User {
     this.id = id;
     this.name = name;
     this.socketId = socketId;
-    this.cardIndex = 0;
+    this.cardIndex = 1;
     this.played = false;
   }
 }

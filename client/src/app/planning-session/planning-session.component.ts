@@ -5,6 +5,7 @@ import { Inject } from "@angular/core";
 import { SESSION_STORAGE, StorageService } from "ngx-webstorage-service";
 import { HttpClient } from "@angular/common/http";
 import { Session, VotingState, Card, CardDeck } from "./../model/";
+import { FellowPlayerViewModel } from "./../viewModel/"
 import { ClipboardService } from "ngx-clipboard";
 
 const USERNAME_SESSION_KEY = "UserInfo";
@@ -26,6 +27,7 @@ export class PlanningSessionComponent implements OnInit {
   stopVotingDisabled: boolean;
   resetVotingDisabled: boolean;
   cards: Card[];
+  fellowPlayers: FellowPlayerViewModel[];
 
   constructor(
     private _Activatedroute: ActivatedRoute,
@@ -151,6 +153,18 @@ export class PlanningSessionComponent implements OnInit {
       this.session = data as Session;
       this.sessionName = this.session.name;
       this.setButtonState(this.session.state);
+
+      this.UpdateViewModel(this.session);
+    });
+  }
+
+  UpdateViewModel(session: Session) {
+    this.fellowPlayers = [];
+    session.users.forEach(user => {
+      if(user.id !== this.userId) {
+        var cardIndex = Math.max(1,user.cardIndex-1);
+        this.fellowPlayers.push(new FellowPlayerViewModel(user.name, user.played, this.cards[cardIndex].name));
+      }
     });
   }
 }
