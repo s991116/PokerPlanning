@@ -10,16 +10,17 @@ export class PokerController {
   private sessions: { [key: string]: Session };
   private socketIdWithSession: { [sessionId: string]: string };
   private cardDeck: CardDeck = new CardDeck([
-    new Card("0 Point", 0),
-    new Card("300 Point", 300),
-    new Card("600 Point", 600),
-    new Card("800 Point", 800),
-    new Card("900 Point", 900),
-    new Card("975 Point", 975),
-    new Card("990 Point", 990),
-    new Card("1000 Point", 1000),
-    new Card("? Point", undefined),
-    new Card("Trash", undefined),
+    new Card("Select BusinesValue-Card", undefined, true),
+    new Card("0 Point", 0, false),
+    new Card("300 Point", 300, false),
+    new Card("600 Point", 600, false),
+    new Card("800 Point", 800, false),
+    new Card("900 Point", 900, false),
+    new Card("975 Point", 975, false),
+    new Card("990 Point", 990, false),
+    new Card("1000 Point", 1000, false),
+    new Card("? Point", undefined, false),
+    new Card("Trash", undefined, false)
   ]);
 
   constructor() {
@@ -32,7 +33,7 @@ export class PokerController {
     let sessionId = session.id;
     this.sessions[sessionId] = session;
     io.in(sessionId).emit("status", this.sessions[sessionId]);
-    res.json({ sessionId: sessionId});
+    res.json({ sessionId: sessionId });
   }
 
   private createNewUser(sessionId: string, socketId: string): User {
@@ -90,11 +91,11 @@ export class PokerController {
     }
   }
 
-  private resetAllVoting(session:Session) : void {
+  private resetAllVoting(session: Session): void {
     session.users.forEach(user => {
       user.played = false;
       user.cardIndex = 1;
-    })
+    });
   }
 
   public stopVoting(req: Request, res: Response, io: SocketIO.Server) {
@@ -141,14 +142,14 @@ export class PokerController {
     }
   }
 
-  private updateSessionState(session: Session) : void {
+  private updateSessionState(session: Session): void {
     let allPlayersPlayed = true;
-    session.users.forEach( user => {
-      if(!user.played && user.isPlaying) {
+    session.users.forEach(user => {
+      if (!user.played && user.isPlaying) {
         allPlayersPlayed = false;
       }
     });
-    if(allPlayersPlayed) {
+    if (allPlayersPlayed) {
       session.state = VotingState.Result;
     }
   }

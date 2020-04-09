@@ -45,13 +45,11 @@
         <div class="row">
           <div class="col">
             <select
-              name="cardDeck" ngModel
+              name="cardDeck" [(ngModel)]="selectedCard"
               class="form-control"
               #mySelect
-              (change)="onCardSelected(mySelect.selectedIndex)"
-            >
-              <option value="" disabled>Select BusinesValue-Card</option>
-              <option [ngValue]="cards"  *ngFor="let card of cards">
+              (change)="onCardSelected(mySelect.selectedIndex)">
+              <option *ngFor="let card of cards" [disabled]="card.disabled">
                 {{ card.name }}
               </option>
             </select>
@@ -59,7 +57,6 @@
         </div>
       </div>
     </div>
-
     <form name="startVotingForm" (ngSubmit)="startVotingForm()">
       <button
         type="submit"
