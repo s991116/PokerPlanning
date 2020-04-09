@@ -4,11 +4,11 @@ import * as io from "socket.io-client";
 import { Inject } from "@angular/core";
 import { SESSION_STORAGE, StorageService } from "ngx-webstorage-service";
 import { HttpClient } from "@angular/common/http";
-import { Session, VotingState, Card, CardDeck } from "./../model/";
+import { Session, VotingState, Card, CardDeck, User } from "./../model/";
 import { FellowPlayerViewModel } from "./../viewModel/";
 import { ClipboardService } from "ngx-clipboard";
-import { UpdateNameService } from './../updateName/updateName.service';
-import { Subject } from 'rxjs';
+import { UpdateNameService } from "./../updateName/updateName.service";
+import { Subject } from "rxjs";
 
 const USERNAME_SESSION_KEY = "UserInfo";
 
@@ -127,7 +127,11 @@ export class PlanningSessionComponent implements OnInit {
               this.userName = val.name;
               this.userId = val.id;
               this.sessionExists = true;
-              this.updateNameService.updateName(this.sessionId, this.userId, this.updateNameTerm);
+              this.updateNameService.updateName(
+                this.sessionId,
+                this.userId,
+                this.updateNameTerm
+              );
             },
             response => {
               this.sessionExists = false;
@@ -152,27 +156,41 @@ export class PlanningSessionComponent implements OnInit {
     this.fellowPlayers = [];
     session.users.forEach(user => {
       if (user.id !== this.userId) {
-        var cardIndex = Math.max(1, user.cardIndex);
-        let cardText: string;
-        if (user.isPlaying) {
-          if (session.state == VotingState.Voting) {
-            if (user.played) cardText = "Played card";
-            else cardText = "?";
-          }
-          if (session.state == VotingState.Result) {
-            if (user.played) cardText = this.cards[cardIndex].name;
-            else cardText = "Did not play";
-          }
-        } else {
-          cardText = "Guest";
-        }
-
+        let cardText = this.getCardText(user, session, true);
         this.fellowPlayers.push(
           new FellowPlayerViewModel(user.name, user.played, cardText)
         );
       } else {
+        let cardText = this.getCardText(user, session, false);
+        this.fellowPlayers.unshift(
+          new FellowPlayerViewModel(user.name, user.played, cardText)
+        );
         if (user.isPlaying && !user.played) this.selectedCard = user.cardIndex;
       }
     });
+  }
+
+  private getCardText(user: User, session: Session, opponent: boolean): string {
+    var cardIndex = Math.max(1, user.cardIndex);
+    let cardText: string;
+    if (!user.isPlaying) {
+      return "Guest";
+    }
+    if (opponent) {
+      if (session.state == VotingState.Voting) {
+        if (user.played) cardText = "Played card";
+        else cardText = "?";
+      }
+      if (session.state == VotingState.Result) {
+        if (user.played) {
+          cardText = this.cards[cardIndex].name;
+        } else cardText = "Did not play";
+      }
+    } else {
+      if (user.played) {
+        cardText = this.cards[cardIndex].name;
+      } else cardText = "Select card";
+    }
+    return cardText;
   }
 }
