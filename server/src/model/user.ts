@@ -1,6 +1,6 @@
 export class User {
   readonly id: string;
-  readonly name: string;
+  public name: string;
   readonly socketId: string;
   public cardIndex: number;
   public played: boolean;

@@ -7,13 +7,16 @@ import { HttpClient } from "@angular/common/http";
 import { Session, VotingState, Card, CardDeck } from "./../model/";
 import { FellowPlayerViewModel } from "./../viewModel/";
 import { ClipboardService } from "ngx-clipboard";
+import { UpdateNameService } from './../updateName/updateName.service';
+import { Subject } from 'rxjs';
 
 const USERNAME_SESSION_KEY = "UserInfo";
 
 @Component({
   selector: "app-planning-session",
   templateUrl: "./planning-session.component.html",
-  styleUrls: ["./planning-session.component.css"]
+  styleUrls: ["./planning-session.component.css"],
+  providers: [UpdateNameService]
 })
 export class PlanningSessionComponent implements OnInit {
   sessionId: string;
@@ -28,12 +31,14 @@ export class PlanningSessionComponent implements OnInit {
   cards: Card[];
   fellowPlayers: FellowPlayerViewModel[];
   selectedCard;
+  updateNameTerm = new Subject<string>();
 
   constructor(
     private _Activatedroute: ActivatedRoute,
     @Inject(SESSION_STORAGE) private storage: StorageService,
     private _clipboardService: ClipboardService,
-    private http: HttpClient
+    private http: HttpClient,
+    private updateNameService: UpdateNameService
   ) {
     this._Activatedroute.paramMap.subscribe(params => {
       this.sessionId = params.get("id");
@@ -64,7 +69,6 @@ export class PlanningSessionComponent implements OnInit {
   }
 
   onCardSelected(value: string): void {
-    console.log(value);
     this.http
       .post("/vote", {
         sessionId: this.sessionId,
@@ -123,6 +127,7 @@ export class PlanningSessionComponent implements OnInit {
               this.userName = val.name;
               this.userId = val.id;
               this.sessionExists = true;
+              this.updateNameService.updateName(this.sessionId, this.userId, this.updateNameTerm);
             },
             response => {
               this.sessionExists = false;

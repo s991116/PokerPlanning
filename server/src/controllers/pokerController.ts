@@ -113,6 +113,33 @@ export class PokerController {
     }
   }
 
+  public updateName(req: Request, res: Response, io: SocketIO.Server) {
+    let sessionId = req.body.sessionId;
+    let userName = req.body.userName;
+    let userId = req.body.userId;
+    let session = this.sessions[sessionId];
+    if (session) {
+      let user = session.users.find((i: any) => i.id === userId);
+      if (user) {
+        user.name = userName;
+        this.updateSessionState(session);
+
+        io.in(sessionId).emit("status", this.sessions[sessionId]);
+        res.json(session);
+      } else {
+        res.status(400).json({
+          status: "error",
+          error: "userID do not exists"
+        });
+      }
+    } else {
+      res.status(400).json({
+        status: "error",
+        error: "sessionId do not exists"
+      });
+    }
+  }
+
   public vote(req: Request, res: Response, io: SocketIO.Server) {
     let sessionId = req.body.sessionId;
     let userId = req.body.userId;
@@ -131,7 +158,7 @@ export class PokerController {
       } else {
         res.status(400).json({
           status: "error",
-          error: "sessionId do not exists"
+          error: "userID do not exists"
         });
       }
     } else {

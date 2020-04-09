@@ -68,5 +68,9 @@ export class Routes {
     app.route("/vote").post((req: Request, res: Response) => {
       this.pokerController.vote(req, res, this.io);
     });
+
+    app.route("/updateName").post((req: Request, res: Response) => {
+      this.pokerController.updateName(req, res, this.io);
+    });
   }
 }
