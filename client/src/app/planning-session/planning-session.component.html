@@ -14,16 +14,39 @@
       </div>
     </div>
     <div class="row">
-      <div class="col-lg-8">
+      <div class="col-lg-4">
         <div class="input-group mb-3">
           <div class="input-group-prepend">
-            <span class="input-group-text" id="basic-addon1">@</span>
+            <span class="input-group-text" id="basic-addon1">Your name</span>
           </div>
-          <input 
-          type="text" class="form-control"
-          (keyup)="updateNameTerm.next($event.target.value)"
-          ng-model="userName" placeholder="{{ userName }} (Click to rename)"
-          aria-label="Username" aria-describedby="basic-addon1" />
+          <input
+            type="text"
+            class="form-control"
+            (keyup)="updateNameTerm.next($event.target.value)"
+            ng-model="userName"
+            placeholder="{{ userName }} (Click to rename)"
+            aria-label="Username"
+            aria-describedby="basic-addon1"
+          />
+        </div>
+      </div>
+      <div class="col-lg-4">
+        <div class="input-group mb-3">
+          <div class="input-group-prepend">
+            <span class="input-group-text" id="basic-addon1">Your Card</span>
+          </div>
+          <select
+            name="cardDeck"
+            [(ngModel)]="selectedCard"
+            class="form-control"
+            placeholder="Select card"
+            #mySelect
+            (change)="onCardSelected(mySelect.selectedIndex)"
+          >
+            <option *ngFor="let card of cards" [disabled]="card.disabled">
+              {{ card.name }}
+            </option>
+          </select>
         </div>
       </div>
     </div>
@@ -49,25 +72,6 @@
             >
           </li>
         </ul>
-      </div>
-    </div>
-    <div class="row">
-      <div class="col-lg-8">
-        <div class="row">
-          <div class="col">
-            <select
-              name="cardDeck"
-              [(ngModel)]="selectedCard"
-              class="form-control"
-              #mySelect
-              (change)="onCardSelected(mySelect.selectedIndex)"
-            >
-              <option *ngFor="let card of cards" [disabled]="card.disabled">
-                {{ card.name }}
-              </option>
-            </select>
-          </div>
-        </div>
       </div>
     </div>
     <form name="startVotingForm" (ngSubmit)="startVotingForm()">
