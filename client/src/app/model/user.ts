@@ -4,6 +4,7 @@ export class User {
   readonly socketId: string;
   public cardIndex: number;
   public played: boolean;
+  public isPlaying: boolean;
 
   constructor(id:string, name: string, socketId: string) {
     this.id = id;
@@ -11,5 +12,6 @@ export class User {
     this.socketId = socketId;
     this.cardIndex = 0;
     this.played = false;
+    this.isPlaying = true;
   }
 }

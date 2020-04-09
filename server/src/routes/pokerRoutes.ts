@@ -65,10 +65,6 @@ export class Routes {
       this.pokerController.stopVoting(req, res, this.io);
     });
 
-    app.route("/resetVoting").post((req: Request, res: Response) => {
-      this.pokerController.resetVoting(req, res, this.io);
-    });
-
     app.route("/vote").post((req: Request, res: Response) => {
       this.pokerController.vote(req, res, this.io);
     });

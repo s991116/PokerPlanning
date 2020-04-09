@@ -25,7 +25,6 @@ export class PlanningSessionComponent implements OnInit {
   session: Session;
   startVotingDisabled: boolean;
   stopVotingDisabled: boolean;
-  resetVotingDisabled: boolean;
   cards: Card[];
   fellowPlayers: FellowPlayerViewModel[];
 
@@ -63,16 +62,6 @@ export class PlanningSessionComponent implements OnInit {
     );
   }
 
-  resetVotingForm(): void {
-    this.http.post("/resetVoting", this.session).subscribe(
-      (val: any) => {},
-      response => {
-        console.log("POST call in error", response);
-      },
-      () => {}
-    );
-  }
-
   onCardSelected(value: string): void {
     console.log(value);
     this.http
@@ -92,22 +81,14 @@ export class PlanningSessionComponent implements OnInit {
 
   setButtonState(state: VotingState): void {
     switch (state) {
-      case VotingState.WaitingToVote:
-        this.startVotingDisabled = false;
-        this.stopVotingDisabled = true;
-        this.resetVotingDisabled = true;
-        break;
-
       case VotingState.Voting:
         this.startVotingDisabled = true;
         this.stopVotingDisabled = false;
-        this.resetVotingDisabled = false;
         break;
 
       case VotingState.Result:
         this.startVotingDisabled = false;
         this.stopVotingDisabled = true;
-        this.resetVotingDisabled = false;
         break;
     }
   }

@@ -1,5 +1,4 @@
 export enum VotingState {
-    WaitingToVote = 1,
-    Voting,
+    Voting = 1,
     Result
 }

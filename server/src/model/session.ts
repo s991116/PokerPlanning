@@ -9,6 +9,6 @@ export class Session {
         this.id = id;
         this.name = name;
         this.users = <User[]>[]
-        this.state = VotingState.WaitingToVote;
+        this.state = VotingState.Voting;
     }
 }
