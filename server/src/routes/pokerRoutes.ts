@@ -57,12 +57,12 @@ export class Routes {
       this.pokerController.createUser(req, res, this.io);
     });
 
-    app.route("/startVoting").post((req: Request, res: Response) => {
-      this.pokerController.startVoting(req, res, this.io);
+    app.route("/newRound").post((req: Request, res: Response) => {
+      this.pokerController.newRound(req, res, this.io);
     });
 
-    app.route("/stopVoting").post((req: Request, res: Response) => {
-      this.pokerController.stopVoting(req, res, this.io);
+    app.route("/showCards").post((req: Request, res: Response) => {
+      this.pokerController.showCards(req, res, this.io);
     });
 
     app.route("/vote").post((req: Request, res: Response) => {

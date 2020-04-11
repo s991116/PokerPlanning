@@ -26,8 +26,8 @@ export class PlanningSessionComponent implements OnInit {
   userName: string;
   userId: string;
   session: Session;
-  startVotingDisabled: boolean;
-  stopVotingDisabled: boolean;
+  newRoundDisabled: boolean;
+  showCardsDisabled: boolean;
   cards: Card[];
   fellowPlayers: FellowPlayerViewModel[];
   selectedCard: Card;
@@ -61,8 +61,8 @@ export class PlanningSessionComponent implements OnInit {
     this.sessionExists = false;
   }
 
-  startVotingForm(): void {
-    this.http.post("/startVoting", this.session).subscribe(
+  newRoundForm(): void {
+    this.http.post("/newRound", this.session).subscribe(
       (val: any) => {},
       (response) => {
         console.log("POST call in error", response);
@@ -71,8 +71,8 @@ export class PlanningSessionComponent implements OnInit {
     );
   }
 
-  stopVotingForm(): void {
-    this.http.post("/stopVoting", this.session).subscribe(
+  showCardsForm(): void {
+    this.http.post("/showCards", this.session).subscribe(
       (val: any) => {},
       (response) => {
         console.log("POST call in error", response);
@@ -117,13 +117,13 @@ export class PlanningSessionComponent implements OnInit {
   setButtonState(state: VotingState): void {
     switch (state) {
       case VotingState.Voting:
-        this.startVotingDisabled = true;
-        this.stopVotingDisabled = false;
+        this.newRoundDisabled = true;
+        this.showCardsDisabled = false;
         break;
 
       case VotingState.Result:
-        this.startVotingDisabled = false;
-        this.stopVotingDisabled = true;
+        this.newRoundDisabled = false;
+        this.showCardsDisabled = true;
         break;
     }
   }
@@ -176,13 +176,13 @@ export class PlanningSessionComponent implements OnInit {
       console.log(data);
       this.session = data as Session;
       this.sessionName = this.session.name;
-      this.setButtonState(this.session.state);
-
       this.UpdateViewModel(this.session);
     });
   }
 
   UpdateViewModel(session: Session) {
+    this.setButtonState(session.state);
+
     this.fellowPlayers = [];
     session.users.forEach((user) => {
       if (user.id !== this.userId) {
@@ -192,6 +192,7 @@ export class PlanningSessionComponent implements OnInit {
         );
       } else {
         let cardText = this.getCardText(user, session, false);
+        this.selectedCard = this.cards[user.cardIndex];
         this.fellowPlayers.unshift(
           new FellowPlayerViewModel(user.name, user.played, cardText)
         );
@@ -212,18 +213,23 @@ export class PlanningSessionComponent implements OnInit {
     }
     if (opponent) {
       if (session.state == VotingState.Voting) {
-        if (user.played) cardText = "Played card";
+        if (user.played) cardText = "Played Card";
         else cardText = "?";
       }
       if (session.state == VotingState.Result) {
         if (user.played) {
           cardText = this.cards[cardIndex].name;
-        } else cardText = "Did not play";
+        } else cardText = "No Card Played";
       }
     } else {
       if (user.played) {
         cardText = this.cards[cardIndex].name;
-      } else cardText = "Select card";
+      } else {
+        if(session.state == VotingState.Voting)
+          cardText = "Select Card";
+        else
+          cardText = "No Card Played";
+      }
     }
     return cardText;
   }

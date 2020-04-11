@@ -38,7 +38,7 @@
         </div>
       </div>
       <div class="col-lg-3">
-        <div class="input-group mb-3">
+        <div class="input-group mb-3" [hidden]="!selectedPlayingType.value">
           <div class="input-group-prepend">
             <span class="input-group-text" id="basic-addon1">Your Card</span>
           </div>
@@ -94,22 +94,22 @@
     <div class="row">
       <div class="col-lg-6">
         <div class="input-group mb-3">
-          <form name="startVotingForm" (ngSubmit)="startVotingForm()">
+          <form name="newRoundForm" (ngSubmit)="newRoundForm()">
             <button
               type="submit"
               class="btn btn-primary"
-              [disabled]="startVotingDisabled"
+              [disabled]="newRoundDisabled"
             >
-              Start Voting
+              New Round
             </button>
           </form>
-          <form name="stopVotingForm" (ngSubmit)="stopVotingForm()">
+          <form name="showCardsForm" (ngSubmit)="showCardsForm()">
             <button
               type="submit"
               class="btn btn-primary"
-              [disabled]="stopVotingDisabled"
+              [disabled]="showCardsDisabled"
             >
-              Stop Voting
+              Show Cards
             </button>
           </form>
         </div>

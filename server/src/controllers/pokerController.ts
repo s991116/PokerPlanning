@@ -75,7 +75,7 @@ export class PokerController {
     }
   }
 
-  public startVoting(req: Request, res: Response, io: SocketIO.Server) {
+  public newRound(req: Request, res: Response, io: SocketIO.Server) {
     let sessionId = req.body.id;
     if (this.sessions[sessionId]) {
       let session = this.sessions[sessionId];
@@ -94,11 +94,11 @@ export class PokerController {
   private resetAllVoting(session: Session): void {
     session.users.forEach(user => {
       user.played = false;
-      user.cardIndex = 1;
+      user.cardIndex = 0;
     });
   }
 
-  public stopVoting(req: Request, res: Response, io: SocketIO.Server) {
+  public showCards(req: Request, res: Response, io: SocketIO.Server) {
     let sessionId = req.body.id;
     if (this.sessions[sessionId]) {
       let session = this.sessions[sessionId];
@@ -122,7 +122,6 @@ export class PokerController {
       let user = session.users.find((i: any) => i.id === userId);
       if (user) {
         user.name = userName;
-        this.updateSessionState(session);
 
         io.in(sessionId).emit("status", this.sessions[sessionId]);
         res.json(session);
@@ -151,8 +150,6 @@ export class PokerController {
         user.cardIndex = cardValue;
         user.played = true;
 
-        this.updateSessionState(session);
-
         io.in(sessionId).emit("status", this.sessions[sessionId]);
         res.json(session);
       } else {
@@ -179,7 +176,8 @@ export class PokerController {
       let user = session.users.find((i: any) => i.id === userId);
       if (user) {
         user.isPlaying = playing;
-        this.updateSessionState(session);
+        if(!playing)
+          user.cardIndex = 0;
 
         io.in(sessionId).emit("status", this.sessions[sessionId]);
         res.json(session);
@@ -194,22 +192,6 @@ export class PokerController {
         status: "error",
         error: "sessionId do not exists"
       });
-    }
-  }
-
-  private updateSessionState(session: Session): void {
-    let allPlayersPlayed = true;
-    session.users.forEach(user => {
-      if (!user.played && user.isPlaying) {
-        allPlayersPlayed = false;
-      }
-      if (!user.isPlaying) {
-        user.played = false;
-      }
-
-    });
-    if (allPlayersPlayed) {
-      session.state = VotingState.Result;
     }
   }
 
