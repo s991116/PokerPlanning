@@ -169,12 +169,44 @@ export class PokerController {
     }
   }
 
+  public changePlayerType(req: Request, res: Response, io: SocketIO.Server) {
+    let sessionId = req.body.sessionId;
+    let userId = req.body.userId;
+    let playing = req.body.playing;
+    console.log(playing);
+    let session = this.sessions[sessionId];
+    if (session) {
+      let user = session.users.find((i: any) => i.id === userId);
+      if (user) {
+        user.isPlaying = playing;
+        this.updateSessionState(session);
+
+        io.in(sessionId).emit("status", this.sessions[sessionId]);
+        res.json(session);
+      } else {
+        res.status(400).json({
+          status: "error",
+          error: "userID do not exists"
+        });
+      }
+    } else {
+      res.status(400).json({
+        status: "error",
+        error: "sessionId do not exists"
+      });
+    }
+  }
+
   private updateSessionState(session: Session): void {
     let allPlayersPlayed = true;
     session.users.forEach(user => {
       if (!user.played && user.isPlaying) {
         allPlayersPlayed = false;
       }
+      if (!user.isPlaying) {
+        user.played = false;
+      }
+
     });
     if (allPlayersPlayed) {
       session.state = VotingState.Result;

@@ -69,6 +69,10 @@ export class Routes {
       this.pokerController.vote(req, res, this.io);
     });
 
+    app.route("/changePlayerType").post((req: Request, res: Response) => {
+      this.pokerController.changePlayerType(req, res, this.io);
+    });
+
     app.route("/updateName").post((req: Request, res: Response) => {
       this.pokerController.updateName(req, res, this.io);
     });

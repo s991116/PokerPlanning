@@ -50,7 +50,7 @@
             #mySelect
             (change)="onCardSelected(mySelect.selectedIndex)"
           >
-            <option *ngFor="let card of cards" [disabled]="card.disabled">
+            <option *ngFor="let card of cards" [disabled]="card.disabled" [ngValue]="card">
               {{ card.name }}
             </option>
           </select>
@@ -58,13 +58,15 @@
       </div>
       <div class="col-lg-1">
         <div class="input-group mb-3">
-          <select class="form-control">
-            <option>
-              Player
-            </option>
-            <option>
-              Guest
-            </option>
+          <select
+            class="form-control"
+            [(ngModel)]="selectedPlayingType"
+            #mySelectedPlayerType
+            (change)="onPlayerTypeSelected(mySelectedPlayerType.selectedIndex)"
+          >
+          <option *ngFor="let o of selectedPlayingTypes" [ngValue]="o">
+            {{o.name}}
+         </option>
           </select>
         </div>
       </div>

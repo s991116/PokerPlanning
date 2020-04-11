@@ -16,7 +16,7 @@ const USERNAME_SESSION_KEY = "UserInfo";
   selector: "app-planning-session",
   templateUrl: "./planning-session.component.html",
   styleUrls: ["./planning-session.component.css"],
-  providers: [UpdateNameService]
+  providers: [UpdateNameService],
 })
 export class PlanningSessionComponent implements OnInit {
   sessionId: string;
@@ -30,8 +30,21 @@ export class PlanningSessionComponent implements OnInit {
   stopVotingDisabled: boolean;
   cards: Card[];
   fellowPlayers: FellowPlayerViewModel[];
-  selectedCard;
+  selectedCard: Card;
   updateNameTerm = new Subject<string>();
+  
+  selectedPlayingTypes = [
+    {
+      name: "Player",
+      value: true,
+    },
+    {
+      name: "Observer",
+      value: false,
+    },
+  ];
+  selectedPlayingType = this.selectedPlayingTypes[0];
+
 
   constructor(
     private _Activatedroute: ActivatedRoute,
@@ -40,7 +53,7 @@ export class PlanningSessionComponent implements OnInit {
     private http: HttpClient,
     private updateNameService: UpdateNameService
   ) {
-    this._Activatedroute.paramMap.subscribe(params => {
+    this._Activatedroute.paramMap.subscribe((params) => {
       this.sessionId = params.get("id");
       console.log("Room Session Id:" + this.sessionId);
       this.session = new Session("", "");
@@ -51,7 +64,7 @@ export class PlanningSessionComponent implements OnInit {
   startVotingForm(): void {
     this.http.post("/startVoting", this.session).subscribe(
       (val: any) => {},
-      response => {
+      (response) => {
         console.log("POST call in error", response);
       },
       () => {}
@@ -61,7 +74,7 @@ export class PlanningSessionComponent implements OnInit {
   stopVotingForm(): void {
     this.http.post("/stopVoting", this.session).subscribe(
       (val: any) => {},
-      response => {
+      (response) => {
         console.log("POST call in error", response);
       },
       () => {}
@@ -73,11 +86,28 @@ export class PlanningSessionComponent implements OnInit {
       .post("/vote", {
         sessionId: this.sessionId,
         userId: this.userId,
-        cardValue: value
+        cardValue: value,
       })
       .subscribe(
         (val: any) => {},
-        response => {
+        (response) => {
+          console.log("POST call in error", response);
+        },
+        () => {}
+      );
+  }
+
+  onPlayerTypeSelected(value: string): void {
+    let playing = this.selectedPlayingTypes[value].value;
+    this.http
+      .post("/changePlayerType", {
+        sessionId: this.sessionId,
+        userId: this.userId,
+        playing: playing,
+      })
+      .subscribe(
+        (val: any) => {},
+        (response) => {
           console.log("POST call in error", response);
         },
         () => {}
@@ -120,7 +150,7 @@ export class PlanningSessionComponent implements OnInit {
         this.http
           .post("/createUser", {
             sessionId: this.sessionId,
-            socketId: socket.id
+            socketId: socket.id,
           })
           .subscribe(
             (val: any) => {
@@ -133,7 +163,7 @@ export class PlanningSessionComponent implements OnInit {
                 this.updateNameTerm
               );
             },
-            response => {
+            (response) => {
               this.sessionExists = false;
               console.log("POST call in error", response);
             },
@@ -142,7 +172,7 @@ export class PlanningSessionComponent implements OnInit {
       }
     });
 
-    socket.on("status", data => {
+    socket.on("status", (data) => {
       console.log(data);
       this.session = data as Session;
       this.sessionName = this.session.name;
@@ -154,7 +184,7 @@ export class PlanningSessionComponent implements OnInit {
 
   UpdateViewModel(session: Session) {
     this.fellowPlayers = [];
-    session.users.forEach(user => {
+    session.users.forEach((user) => {
       if (user.id !== this.userId) {
         let cardText = this.getCardText(user, session, true);
         this.fellowPlayers.push(
@@ -165,7 +195,11 @@ export class PlanningSessionComponent implements OnInit {
         this.fellowPlayers.unshift(
           new FellowPlayerViewModel(user.name, user.played, cardText)
         );
-        if (user.isPlaying && !user.played) this.selectedCard = user.cardIndex;
+        if(user.isPlaying) {
+          this.selectedPlayingType = this.selectedPlayingTypes[0];
+        } else {
+          this.selectedPlayingType = this.selectedPlayingTypes[1];
+        }
       }
     });
   }
@@ -174,7 +208,7 @@ export class PlanningSessionComponent implements OnInit {
     var cardIndex = Math.max(1, user.cardIndex);
     let cardText: string;
     if (!user.isPlaying) {
-      return "Guest";
+      return "Observer";
     }
     if (opponent) {
       if (session.state == VotingState.Voting) {
