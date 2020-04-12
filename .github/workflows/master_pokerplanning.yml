@@ -23,7 +23,7 @@ jobs:
     - name: npm install, build, and test client
       run: |
         npm  install
-        npm run buildAndDeploy ${{ secrets.Test }}
+        npm run buildAndDeploy
 
     - name: 'Deploy to Azure Web App'
       uses: azure/webapps-deploy@v1

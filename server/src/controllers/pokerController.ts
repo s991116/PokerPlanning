@@ -11,7 +11,7 @@ export class PokerController {
   private sessions: { [key: string]: Session };
   private socketIdWithSession: { [sessionId: string]: string };
   private cardDeck: CardDeck = new CardDeck([
-    new Card("Select BusinesValue-Card", undefined, true),
+    new Card(process.env.Test + " - Select BusinesValue-Card", undefined, true),
     new Card("0 Point", 0, false),
     new Card("300 Point", 300, false),
     new Card("600 Point", 600, false),
