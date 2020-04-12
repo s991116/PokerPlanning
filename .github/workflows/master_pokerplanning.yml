@@ -25,7 +25,7 @@ jobs:
       env:
       SUPER_SECRET: ${{ secrets.test  }}
       run: |
-      npm  install
+          npm  install
           npm run buildAndDeploy "$SUPER_SECRET"
 
     - name: 'Deploy to Azure Web App'
