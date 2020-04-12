@@ -23,7 +23,7 @@ jobs:
     - name: npm install, build, and test client
       run: |
           npm  install
-          npm run buildAndDeploy
+          npm run buildAndDeploy ${{ secrets.test }}
 
 #          npm --prefix ./client/ install
 
