@@ -11,7 +11,7 @@ export class PokerController {
   private sessions: { [key: string]: Session };
   private socketIdWithSession: { [sessionId: string]: string };
   private cardDeck: CardDeck = new CardDeck([
-    new Card(process.env.Test + " - Select BusinesValue-Card", undefined, true),
+    new Card("Select BusinesValue-Card", undefined, true),
     new Card("0 Point", 0, false),
     new Card("300 Point", 300, false),
     new Card("600 Point", 600, false),
@@ -27,7 +27,9 @@ export class PokerController {
   constructor() {
     this.sessions = {};
     this.socketIdWithSession = {};
-    mongoose.connect('mongodb://localhost:27017/PokerPlanning', {useNewUrlParser: true, useUnifiedTopology: true}).
+    let connectionString: string = process.env.dbConnection || "mongodb://localhost:27017/PokerPlanning";
+    //connectionString = "mongodb+srv://dbUser:Philip30@cluster0-vkssh.azure.mongodb.net/test?retryWrites=true&w=majority";
+    mongoose.connect(connectionString, {useNewUrlParser: true, useUnifiedTopology: true}).
     catch(error => {console.log("Connect to DB Error:"+ error)});
   }
 
@@ -35,13 +37,13 @@ export class PokerController {
     let session = new Session(uuidv4(), req.body.sessionName);
     let sessionId = session.id;
     this.sessions[sessionId] = session;
-/*-----------------    
+//-----------------    
     let s = new SessionModel({
       _id: sessionId,
       name: session.name
     });
     s.save();
-*/
+//
     io.in(sessionId).emit("status", this.sessions[sessionId]);
     res.json({ sessionId: sessionId });
   }
