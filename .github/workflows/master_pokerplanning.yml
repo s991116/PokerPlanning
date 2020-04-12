@@ -21,8 +21,8 @@ jobs:
         node-version: '12.x'
 
     - name: npm install, build, and test client
-      env: # Or as an environment variable
-        super_secret: ${{ secrets.test }}
+      with: # Set the secret as an input
+      super_secret: ${{ secrets.SuperSecret }}
         run: |
             npm  install
             npm run buildAndDeploy "$super_secret"
