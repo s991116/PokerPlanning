@@ -21,7 +21,6 @@ jobs:
         node-version: '12.x'
 
     - name: npm install, build, and test client
-    - shell: bash
       env:
       SUPER_SECRET: ${{ secrets.test  }}
       run: |
