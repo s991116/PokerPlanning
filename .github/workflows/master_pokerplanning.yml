@@ -21,11 +21,12 @@ jobs:
         node-version: '12.x'
 
     - name: npm install, build, and test client
+    - shell: bash
+      env:
+      SUPER_SECRET: ${{ secrets.test  }}
       run: |
-          npm  install
-          npm run buildAndDeploy ${{ secrets.test }}
-
-#          npm --prefix ./client/ install
+      npm  install
+          npm run buildAndDeploy "$SUPER_SECRET"
 
     - name: 'Deploy to Azure Web App'
       uses: azure/webapps-deploy@v1
