@@ -20,10 +20,10 @@ jobs:
       with:
         node-version: '12.x'
 
-   - name: npm install, build, and test client
+    - name: npm install, build, and test client
       run: |
-          npm  install
-          npm run buildAndDeploy
+        npm  install
+        npm run buildAndDeploy
 
     - name: 'Deploy to Azure Web App'
       uses: azure/webapps-deploy@v1
