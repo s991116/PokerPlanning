@@ -3,7 +3,7 @@ import * as mongoose from 'mongoose';
 const Schema = mongoose.Schema;
 
 export const SessionSchema = new Schema({
-    id: {
+    _id: {
         type: String,
     },
     name: {
@@ -19,5 +19,10 @@ export const SessionSchema = new Schema({
     played: {
         type: Boolean,
         default: false
-    }
+    },
+    isPlaying: {
+        type: Boolean
+    },
 });
+
+module.exports = mongoose.model("User", SessionSchema);
