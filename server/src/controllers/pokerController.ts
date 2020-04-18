@@ -40,7 +40,8 @@ export class PokerController {
 //-----------------    
     let s = new SessionModel({
       _id: sessionId,
-      name: session.name
+      name: session.name,
+      created_date: session.createdDate
     });
     s.save();
 //
