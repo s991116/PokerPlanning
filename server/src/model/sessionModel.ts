@@ -1,27 +1,55 @@
-import * as mongoose from "mongoose";
+//import * as mongoose from "mongoose";
 import { VotingState } from "./VotingState";
+import { Schema, model, Document, Model } from "mongoose";
+import { stringify } from "querystring";
 
-const Schema = mongoose.Schema;
+//const Schema = mongoose.Schema;
 
-export const SessionSchema = new Schema({
+declare interface ISession extends Document {
   _id: {
-    type: String,
-  },
+    type: String;
+  };
   name: {
-    type: String,
-  },
+    type: String;
+  };
   votingState: {
-    type: String,
-    enum: Object.values(VotingState),
-  },
+    type: String;
+  };
   users: [
     {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-    },
-  ],
+      type: Schema.Types.ObjectId;
+      ref: "User";
+    }
+  ];
   created_date: {
-    type: Date,
-    default: Date.now,
-  },
-});
+    type: Date;
+  };
+}
+
+export interface SessionModel extends Model<ISession> {};
+
+export class SessionSchema {
+
+  private _model: Model<ISession>;
+
+  constructor() {
+      const schema =  new Schema({
+          _id: { type: String, required: true},
+          name: { type: String, required: true },
+          votingState: {type: String, required: true, enum: Object.values(VotingState)},
+          users: [
+            {
+              type: Schema.Types.ObjectId,
+              ref: "User",
+            },
+          ],
+          creation_date: { type: Date, default: Date.now }
+      });
+
+      this._model = model<ISession>('User', schema);
+  }
+
+  public get model(): Model<ISession> {
+      return this._model
+  }
+}

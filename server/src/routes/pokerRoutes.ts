@@ -49,7 +49,7 @@ export class Routes {
       this.pokerController.getCardDeck(req, res);
     });
 
-    app.route("/createSession").post((req: Request, res: Response) => {
+    app.route("/createSession").post(async (req: Request, res: Response) => {
       this.pokerController.createSession(req, res, this.io);
     });
 

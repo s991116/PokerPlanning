@@ -1,11 +1,7 @@
-import mongoose = require("mongoose");
-import { SessionSchema } from "../model/sessionModel";
 import { Request, Response } from "express";
 import { Session, User, VotingState, CardDeck, Card } from "./../model";
 import { v4 as uuidv4 } from "uuid";
-
-const SessionModel = mongoose.model("session", SessionSchema);
-
+import { DB } from './db';
 
 export class PokerController {
   private sessions: { [key: string]: Session };
@@ -27,24 +23,20 @@ export class PokerController {
   constructor() {
     this.sessions = {};
     this.socketIdWithSession = {};
-    let connectionString: string = process.env.dbConnection || "mongodb://localhost:27017/PokerPlanning";
-    //connectionString = "mongodb+srv://dbUser:Philip30@cluster0-vkssh.azure.mongodb.net/test?retryWrites=true&w=majority";
-    mongoose.connect(connectionString, {useNewUrlParser: true, useUnifiedTopology: true}).
-    catch(error => {console.log("Connect to DB Error:"+ error)});
   }
 
-  public createSession(req: Request, res: Response, io: SocketIO.Server) {
+  public async createSession(req: Request, res: Response, io: SocketIO.Server) {
     let session = new Session(uuidv4(), req.body.sessionName);
     let sessionId = session.id;
     this.sessions[sessionId] = session;
 //-----------------    
-    let s = new SessionModel({
+    let s = new DB.Models.Session({
       _id: sessionId,
       name: session.name,
       votingState: session.state,
       created_date: session.createdDate,
     });
-    s.save();
+    await s.save();
 //
     io.in(sessionId).emit("status", this.sessions[sessionId]);
     res.json({ sessionId: sessionId });
@@ -60,10 +52,14 @@ export class PokerController {
     return user;
   }
 
-  public createUser(req: Request, res: Response, io: SocketIO.Server) {
+  public async createUser(req: Request, res: Response, io: SocketIO.Server) {
     let sessionId = req.body.sessionId;
     let socketId = req.body.socketId;
-
+    DB.Models.Session.findById(sessionId, (err:any, session) => {
+      if(session) {
+        console.log(session.name);
+      }
+    });
     if (this.sessions[sessionId]) {
       let user = this.createNewUser(sessionId, socketId);
       io.in(sessionId).emit("status", this.sessions[sessionId]);
