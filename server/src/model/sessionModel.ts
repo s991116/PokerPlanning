@@ -1,9 +1,5 @@
-//import * as mongoose from "mongoose";
 import { VotingState } from "./VotingState";
 import { Schema, model, Document, Model } from "mongoose";
-import { stringify } from "querystring";
-
-//const Schema = mongoose.Schema;
 
 declare interface ISession extends Document {
   _id: {
@@ -46,7 +42,7 @@ export class SessionSchema {
           creation_date: { type: Date, default: Date.now }
       });
 
-      this._model = model<ISession>('User', schema);
+      this._model = model<ISession>('Session', schema);
   }
 
   public get model(): Model<ISession> {
