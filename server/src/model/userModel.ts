@@ -10,7 +10,7 @@ declare interface IUser extends Document {
   socketId: {
     type: String;
   };
-  card: {
+  cardIndex: {
     type: Number;
     default: 0;
   };
@@ -33,7 +33,7 @@ export class UserSchema {
       _id: { type: String, required: true },
       name: { type: String, required: true },
       socketId: { type: String },
-      card: { type: Number, default: 0 },
+      cardIndex: { type: Number, default: 0 },
       played: { type: Boolean, default: false },
       isPlaying: { type: Boolean },
     });

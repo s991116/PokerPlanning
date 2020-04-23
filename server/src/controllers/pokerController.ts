@@ -29,7 +29,7 @@ export class PokerController {
     let session = new Session(uuidv4(), req.body.sessionName);
     let sessionId = session.id;
     this.sessions[sessionId] = session;
-//-----------------    
+ 
     let s = new DB.Models.Session({
       _id: sessionId,
       name: session.name,
@@ -37,7 +37,7 @@ export class PokerController {
       created_date: session.createdDate,
     });
     await s.save();
-//
+
     io.in(sessionId).emit("status", this.sessions[sessionId]);
     res.json({ sessionId: sessionId });
   }
@@ -52,7 +52,7 @@ export class PokerController {
     return user;
   }
 
-  public async createUser(req: Request, res: Response, io: SocketIO.Server) {
+  public createUser(req: Request, res: Response, io: SocketIO.Server) {
     let sessionId = req.body.sessionId;
     let socketId = req.body.socketId;
     DB.Models.Session.findById(sessionId, (err:any, session) => {
@@ -60,6 +60,7 @@ export class PokerController {
         console.log(session.name);
       }
     });
+
     if (this.sessions[sessionId]) {
       let user = this.createNewUser(sessionId, socketId);
       io.in(sessionId).emit("status", this.sessions[sessionId]);
