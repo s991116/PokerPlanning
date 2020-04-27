@@ -2,7 +2,6 @@ import { Request, Response } from "express";
 import { Session, User, VotingState, CardDeck, Card } from "./../model";
 import { v4 as uuidv4 } from "uuid";
 import { DB } from "./db";
-import { UserSchema } from "../model/userModel";
 
 export class PokerController {
   private socketIdWithSession: { [sessionId: string]: string };
@@ -40,7 +39,7 @@ export class PokerController {
   public async createUser(req: Request, res: Response, io: SocketIO.Server) {
     let sessionId = req.body.sessionId;
     let socketId = req.body.socketId;
-    DB.Models.Session.Model.findById(sessionId, async (err: any, session) => {
+    DB.Models.Session.Model.findById(sessionId, async (err: any, session:any) => {
       if (session) {
         let user = {
           _id: uuidv4(),
@@ -66,7 +65,7 @@ export class PokerController {
 
   public async removeDisconnectedUser(socket: SocketIO.Socket) {
     let sessionId = this.socketIdWithSession[socket.id];
-    await DB.Models.Session.Model.findById(sessionId, async (err: any, session) => {
+    await DB.Models.Session.Model.findById(sessionId, async (err: any, session:any) => {
       if (session) {
         let users = session.users;
         if (users) {
@@ -76,7 +75,7 @@ export class PokerController {
             }
           });
         }
-        await session.save((err,s) => {
+        await session.save((err:any,s:any) => {
           if(s) {
             socket.in(sessionId).emit("status", session);
           } else
@@ -90,10 +89,10 @@ export class PokerController {
 
   public async newRound(req: Request, res: Response, io: SocketIO.Server) {
     let sessionId = req.body.id;
-    await DB.Models.Session.Model.findById(sessionId, async (err: any, session) => {
+    await DB.Models.Session.Model.findById(sessionId, async (err: any, session:any) => {
       if (session) {
         session.state = "voting";
-        session.users.forEach((user) => {
+        session.users.forEach((user: any) => {
           user.played = false;
           user.cardIndex = 0;
         });
@@ -111,7 +110,7 @@ export class PokerController {
 
   public async showCards(req: Request, res: Response, io: SocketIO.Server) {
     let sessionId = req.body.id;
-    await DB.Models.Session.Model.findById(sessionId, async (err: any, session) => {
+    await DB.Models.Session.Model.findById(sessionId, async (err: any, session: any) => {
       if (session) {
         session.state = "result";
         await session.save();
@@ -131,7 +130,7 @@ export class PokerController {
     let userName = req.body.userName;
     let userId = req.body.userId;
     console.log("sessionId: " + sessionId)
-    await DB.Models.Session.Model.findById(sessionId, async (err: any, session) => {
+    await DB.Models.Session.Model.findById(sessionId, async (err: any, session: any) => {
       if (session) {
         let user = session.users.find((i: any) => i._id === userId);
         if (user) {
@@ -159,7 +158,7 @@ export class PokerController {
     let userId = req.body.userId;
     let cardValue = req.body.cardValue;
 
-    await DB.Models.Session.Model.findById(sessionId, async (err: any, session) => {
+    await DB.Models.Session.Model.findById(sessionId, async (err: any, session: any) => {
       if (session) {
         console.log(session.users);
         console.log(userId)
@@ -189,7 +188,7 @@ export class PokerController {
     let sessionId = req.body.sessionId;
     let userId = req.body.userId;
     let playing = req.body.playing;
-    await DB.Models.Session.Model.findById(sessionId, async (err: any, session) => {
+    await DB.Models.Session.Model.findById(sessionId, async (err: any, session: any) => {
       if (session) {
         let user = session.users.find((i: any) => i._id === userId);
         if (user) {
