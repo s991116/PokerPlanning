@@ -1,47 +1,15 @@
-import { Schema, model, Document, Model } from "mongoose";
-
-declare interface IUser extends Document {
-  _id: {
-    type: String;
-  };
-  name: {
-    type: String;
-  };
-  socketId: {
-    type: String;
-  };
-  cardIndex: {
-    type: Number;
-    default: 0;
-  };
-  played: {
-    type: Boolean;
-    default: false;
-  };
-  isPlaying: {
-    type: Boolean;
-  };
-}
-
-export interface UserModel extends Model<IUser> {}
+import { createSchema, Type, typedModel, ExtractProps } from 'ts-mongoose';
 
 export class UserSchema {
-  private _model: Model<IUser>;
-
-  constructor() {
-    const schema = new Schema({
-      _id: { type: String, required: true },
-      name: { type: String, required: true },
-      socketId: { type: String },
-      cardIndex: { type: Number, default: 0 },
-      played: { type: Boolean, default: false },
-      isPlaying: { type: Boolean },
+  
+  readonly Schema = createSchema({
+      _id: Type.string(),
+      name: Type.string({required: true}),
+      socketId: Type.string({ required: true}),
+      cardIndex: Type.number({ required: true, default: 0}),
+      played: Type.boolean({ required:true, default:false}),
+      isPlaying: Type.boolean({ required: true, default:true})
     });
-
-    this._model = model<IUser>("User", schema);
-  }
-
-  public get model(): Model<IUser> {
-    return this._model;
-  }
+    
+    readonly Model = typedModel('User', this.Schema);    
 }

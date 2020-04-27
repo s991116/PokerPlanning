@@ -1,10 +1,10 @@
 import { Request, Response } from "express";
 import { Session, User, VotingState, CardDeck, Card } from "./../model";
 import { v4 as uuidv4 } from "uuid";
-import { DB } from './db';
+import { DB } from "./db";
+import { UserSchema } from "../model/userModel";
 
 export class PokerController {
-  private sessions: { [key: string]: Session };
   private socketIdWithSession: { [sessionId: string]: string };
   private cardDeck: CardDeck = new CardDeck([
     new Card("Select BusinesValue-Card", undefined, true),
@@ -17,193 +17,200 @@ export class PokerController {
     new Card("990 Point", 990, false),
     new Card("1000 Point", 1000, false),
     new Card("? Point", undefined, false),
-    new Card("Trash", undefined, false)
+    new Card("Trash", undefined, false),
   ]);
 
   constructor() {
-    this.sessions = {};
     this.socketIdWithSession = {};
   }
 
   public async createSession(req: Request, res: Response, io: SocketIO.Server) {
-    let session = new Session(uuidv4(), req.body.sessionName);
-    let sessionId = session.id;
-    this.sessions[sessionId] = session;
- 
-    let s = new DB.Models.Session({
-      _id: sessionId,
-      name: session.name,
-      votingState: session.state,
-      created_date: session.createdDate,
+    let _state: VotingState = "voting";
+    let s = new DB.Models.Session.Model({
+      name: req.body.sessionName,
+      state: _state,
     });
     await s.save();
+    //ToDo Change to save with function, where object has id
 
-    io.in(sessionId).emit("status", this.sessions[sessionId]);
-    res.json({ sessionId: sessionId });
+    io.in(s._id).emit("status", s);
+    res.json({ sessionId: s._id });
   }
 
-  private createNewUser(sessionId: string, socketId: string): User {
-    this.socketIdWithSession[socketId] = sessionId;
-
-    let session = this.sessions[sessionId];
-    let userName = "User" + session.users.length;
-    let user = new User(uuidv4(), userName, socketId);
-    session.users.push(user);
-    return user;
-  }
-
-  public createUser(req: Request, res: Response, io: SocketIO.Server) {
+  public async createUser(req: Request, res: Response, io: SocketIO.Server) {
     let sessionId = req.body.sessionId;
     let socketId = req.body.socketId;
-    DB.Models.Session.findById(sessionId, (err:any, session) => {
-      if(session) {
-        console.log(session.name);
-      }
-    });
-
-    if (this.sessions[sessionId]) {
-      let user = this.createNewUser(sessionId, socketId);
-      io.in(sessionId).emit("status", this.sessions[sessionId]);
-      res.json(user);
-    } else {
-      res.status(400).json({
-        status: "error",
-        error: "sessionId do not exists"
-      });
-    }
-  }
-
-  public removeDisconnectedUser(socket: SocketIO.Socket) {
-    let sessionId = this.socketIdWithSession[socket.id];
-    if (sessionId) {
-      let users = this.sessions[sessionId].users;
-      if (users) {
-        users.forEach((item: any, index: any) => {
-          if (item.socketId === socket.id) users.splice(index, 1);
+    DB.Models.Session.Model.findById(sessionId, async (err: any, session) => {
+      if (session) {
+        let user = {
+          _id: uuidv4(),
+          name: "User",
+          socketId: socketId,
+          cardIndex: 0,
+          played: false,
+          isPlaying: true
+        }
+        session.users.push(user);
+        this.socketIdWithSession[socketId] = sessionId;
+        await session.save();
+        io.in(sessionId).emit("status", session);
+        res.json(user);
+      } else {
+        res.status(400).json({
+          status: "error",
+          error: "sessionId do not exists",
         });
-        socket.in(sessionId).emit("status", this.sessions[sessionId]);
       }
-    }
-  }
-
-  public newRound(req: Request, res: Response, io: SocketIO.Server) {
-    let sessionId = req.body.id;
-    if (this.sessions[sessionId]) {
-      let session = this.sessions[sessionId];
-      session.state = VotingState.Voting;
-      this.resetAllVoting(session);
-      io.in(sessionId).emit("status", this.sessions[sessionId]);
-      res.json(session);
-    } else {
-      res.status(400).json({
-        status: "error",
-        error: "sessionId do not exists"
-      });
-    }
-  }
-
-  private resetAllVoting(session: Session): void {
-    session.users.forEach(user => {
-      user.played = false;
-      user.cardIndex = 0;
     });
   }
 
-  public showCards(req: Request, res: Response, io: SocketIO.Server) {
-    let sessionId = req.body.id;
-    if (this.sessions[sessionId]) {
-      let session = this.sessions[sessionId];
-      session.state = VotingState.Result;
-      io.in(sessionId).emit("status", this.sessions[sessionId]);
-      res.json(session);
-    } else {
-      res.status(400).json({
-        status: "error",
-        error: "sessionId do not exists"
-      });
-    }
+  public async removeDisconnectedUser(socket: SocketIO.Socket) {
+    let sessionId = this.socketIdWithSession[socket.id];
+    await DB.Models.Session.Model.findById(sessionId, async (err: any, session) => {
+      if (session) {
+        let users = session.users;
+        if (users) {
+          users.forEach((item: any, index: any) => {
+            if (item.socketId === socket.id) {
+              users.splice(index, 1);
+            }
+          });
+        }
+        await session.save((err,s) => {
+          if(s) {
+            socket.in(sessionId).emit("status", session);
+          } else
+          {
+            console.log("Error removing player:" + err);
+          }
+        });        
+      }
+    });
   }
 
-  public updateName(req: Request, res: Response, io: SocketIO.Server) {
-    let sessionId = req.body.sessionId;
-    let userName = req.body.userName;
-    let userId = req.body.userId;
-    let session = this.sessions[sessionId];
-    if (session) {
-      let user = session.users.find((i: any) => i.id === userId);
-      if (user) {
-        user.name = userName;
-
-        io.in(sessionId).emit("status", this.sessions[sessionId]);
+  public async newRound(req: Request, res: Response, io: SocketIO.Server) {
+    let sessionId = req.body.id;
+    await DB.Models.Session.Model.findById(sessionId, async (err: any, session) => {
+      if (session) {
+        session.state = "voting";
+        session.users.forEach((user) => {
+          user.played = false;
+          user.cardIndex = 0;
+        });
+        await session.save();
+        io.in(sessionId).emit("status", session);
         res.json(session);
       } else {
         res.status(400).json({
           status: "error",
-          error: "userID do not exists"
+          error: "sessionId do not exists",
         });
       }
-    } else {
-      res.status(400).json({
-        status: "error",
-        error: "sessionId do not exists"
-      });
-    }
+    });
   }
 
-  public vote(req: Request, res: Response, io: SocketIO.Server) {
+  public async showCards(req: Request, res: Response, io: SocketIO.Server) {
+    let sessionId = req.body.id;
+    await DB.Models.Session.Model.findById(sessionId, async (err: any, session) => {
+      if (session) {
+        session.state = "result";
+        await session.save();
+        io.in(sessionId).emit("status", session);
+        res.json(session);
+      } else {
+        res.status(400).json({
+          status: "error",
+          error: "sessionId do not exists",
+        });
+      }
+    });
+  }
+
+  public async updateName(req: Request, res: Response, io: SocketIO.Server) {
+    let sessionId = req.body.id;
+    let userName = req.body.userName;
+    let userId = req.body.userId;
+    console.log("sessionId: " + sessionId)
+    await DB.Models.Session.Model.findById(sessionId, async (err: any, session) => {
+      if (session) {
+        let user = session.users.find((i: any) => i._id === userId);
+        if (user) {
+          user.name = userName;
+          await session.save();
+          io.in(sessionId).emit("status", session);
+          res.json(session);
+        } else {
+          res.status(400).json({
+            status: "error",
+            error: "userID do not exists",
+          });
+        }
+      } else {
+        res.status(400).json({
+          status: "error",
+          error: "sessionId do not exists",
+        });
+      }
+    });
+  }
+
+  public async vote(req: Request, res: Response, io: SocketIO.Server) {
     let sessionId = req.body.sessionId;
     let userId = req.body.userId;
     let cardValue = req.body.cardValue;
-    let session = this.sessions[sessionId];
-    if (session) {
-      let user = session.users.find((i: any) => i.id === userId);
-      if (user) {
-        user.cardIndex = cardValue;
-        user.played = true;
 
-        io.in(sessionId).emit("status", this.sessions[sessionId]);
-        res.json(session);
+    await DB.Models.Session.Model.findById(sessionId, async (err: any, session) => {
+      if (session) {
+        console.log(session.users);
+        console.log(userId)
+        let user = session.users.find((i: any) => i._id === userId);
+        if (user) {
+          user.cardIndex = cardValue;
+          user.played = true;
+          await session.save();
+          io.in(sessionId).emit("status", session);
+          res.json(session);
+        } else {
+          res.status(400).json({
+            status: "error",
+            error: "userID do not exists",
+          });
+        }
       } else {
         res.status(400).json({
           status: "error",
-          error: "userID do not exists"
+          error: "sessionId do not exists",
         });
       }
-    } else {
-      res.status(400).json({
-        status: "error",
-        error: "sessionId do not exists"
-      });
-    }
+    });
   }
 
-  public changePlayerType(req: Request, res: Response, io: SocketIO.Server) {
+  public async changePlayerType(req: Request, res: Response, io: SocketIO.Server) {
     let sessionId = req.body.sessionId;
     let userId = req.body.userId;
     let playing = req.body.playing;
-    console.log(playing);
-    let session = this.sessions[sessionId];
-    if (session) {
-      let user = session.users.find((i: any) => i.id === userId);
-      if (user) {
-        user.isPlaying = playing;
-        if(!playing)
-          user.cardIndex = 0;
-
-        io.in(sessionId).emit("status", this.sessions[sessionId]);
-        res.json(session);
+    await DB.Models.Session.Model.findById(sessionId, async (err: any, session) => {
+      if (session) {
+        let user = session.users.find((i: any) => i._id === userId);
+        if (user) {
+          user.isPlaying = playing;
+          if (!playing) user.cardIndex = 0;
+          await session.save();
+          io.in(sessionId).emit("status", session);
+          res.json(session);
+        } else {
+          res.status(400).json({
+            status: "error",
+            error: "userID do not exists",
+          });
+        }
       } else {
         res.status(400).json({
           status: "error",
-          error: "userID do not exists"
+          error: "sessionId do not exists",
         });
       }
-    } else {
-      res.status(400).json({
-        status: "error",
-        error: "sessionId do not exists"
-      });
-    }
+    });
   }
 
   public getCardDeck(req: Request, res: Response) {

@@ -15,7 +15,7 @@ export class UpdateNameService {
         distinctUntilChanged()
       )
       .subscribe(term => {
-        this.http.post("/updateName", {sessionId: sessionId, userId: userId, userName: term}).subscribe(
+        this.http.post("/updateName", {id: sessionId, userId: userId, userName: term}).subscribe(
           (val: any) => {},
           response => {
             console.log("POST call in error", response);

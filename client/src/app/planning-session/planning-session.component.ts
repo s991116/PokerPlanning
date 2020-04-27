@@ -32,7 +32,8 @@ export class PlanningSessionComponent implements OnInit {
   fellowPlayers: FellowPlayerViewModel[];
   selectedCard: Card;
   updateNameTerm = new Subject<string>();
-  
+  socket = io();
+
   selectedPlayingTypes = [
     {
       name: "Player",
@@ -62,7 +63,9 @@ export class PlanningSessionComponent implements OnInit {
   }
 
   newRoundForm(): void {
-    this.http.post("/newRound", this.session).subscribe(
+    this.http.post("/newRound", {
+      id: this.sessionId
+    }).subscribe(
       (val: any) => {},
       (response) => {
         console.log("POST call in error", response);
@@ -72,7 +75,9 @@ export class PlanningSessionComponent implements OnInit {
   }
 
   showCardsForm(): void {
-    this.http.post("/showCards", this.session).subscribe(
+    this.http.post("/showCards", {
+      id: this.sessionId
+    }).subscribe(
       (val: any) => {},
       (response) => {
         console.log("POST call in error", response);
@@ -116,12 +121,12 @@ export class PlanningSessionComponent implements OnInit {
 
   setButtonState(state: VotingState): void {
     switch (state) {
-      case VotingState.Voting:
+      case 'voting':
         this.newRoundDisabled = true;
         this.showCardsDisabled = false;
         break;
 
-      case VotingState.Result:
+      case 'result':
         this.newRoundDisabled = false;
         this.showCardsDisabled = true;
         break;
@@ -134,9 +139,8 @@ export class PlanningSessionComponent implements OnInit {
 
   ngOnInit(): void {
     this.userDefined = this.storage.has(USERNAME_SESSION_KEY);
-    const socket = io();
-    socket.on("connect", () => {
-      socket.emit("sessionRoom", this.sessionId);
+    this.socket.on("connect", () => {
+      this.socket.emit("sessionRoom", this.sessionId);
 
       this.http
         .get("/template/businesscards")
@@ -150,12 +154,14 @@ export class PlanningSessionComponent implements OnInit {
         this.http
           .post("/createUser", {
             sessionId: this.sessionId,
-            socketId: socket.id,
+            socketId: this.socket.id,
           })
           .subscribe(
             (val: any) => {
+              console.log("Creating user");
+              console.log(val);
               this.userName = val.name;
-              this.userId = val.id;
+              this.userId = val._id;
               this.sessionExists = true;
               this.updateNameService.updateName(
                 this.sessionId,
@@ -172,20 +178,27 @@ export class PlanningSessionComponent implements OnInit {
       }
     });
 
-    socket.on("status", (data) => {
+    this.socket.on("status", (data) => {
+      console.log("Data received:");      
       console.log(data);
       this.session = data as Session;
+      console.log("State received:");
+      console.log(this.session);
       this.sessionName = this.session.name;
       this.UpdateViewModel(this.session);
     });
   }
 
+  ngOnDestroy() {
+    this.socket.close();
+  }
+
   UpdateViewModel(session: Session) {
     this.setButtonState(session.state);
-
+    console.log("Is Voting State:" + session.state == 'voting');
     this.fellowPlayers = [];
     session.users.forEach((user) => {
-      if (user.id !== this.userId) {
+      if (user._id !== this.userId) {
         let cardText = this.getCardText(user, session, true);
         this.fellowPlayers.push(
           new FellowPlayerViewModel(user.name, user.played, cardText)
@@ -212,11 +225,11 @@ export class PlanningSessionComponent implements OnInit {
       return "Observer";
     }
     if (opponent) {
-      if (session.state == VotingState.Voting) {
+      if (session.state == 'voting') {
         if (user.played) cardText = "Played Card";
         else cardText = "?";
       }
-      if (session.state == VotingState.Result) {
+      if (session.state == 'result') {
         if (user.played) {
           cardText = this.cards[cardIndex].name;
         } else cardText = "No Card Played";
@@ -225,7 +238,7 @@ export class PlanningSessionComponent implements OnInit {
       if (user.played) {
         cardText = this.cards[cardIndex].name;
       } else {
-        if(session.state == VotingState.Voting)
+        if(session.state == 'voting')
           cardText = "Select Card";
         else
           cardText = "No Card Played";

@@ -1,4 +1,1 @@
-export enum VotingState {
-    Voting = 1,
-    Result
-}
+export type VotingState = 'voting' | 'result';

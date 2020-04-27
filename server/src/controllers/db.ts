@@ -1,9 +1,7 @@
 import { connect, connection, Connection } from 'mongoose';
-import { SessionModel, SessionSchema } from './../model/sessionModel';
-import { UserModel, UserSchema } from './../model/userModel';
+import { SessionSchema } from './../model/sessionModel';
 declare interface IModels {
-    Session: SessionModel;
-    User: UserModel;
+    Session: SessionSchema;
 }
 
 export class DB {
@@ -21,8 +19,7 @@ export class DB {
         this._db.on('error', this.error);
 
         this._models = {
-            Session: new SessionSchema().model,
-            User: new UserSchema().model,
+            Session: new SessionSchema(),
             // this is where we initialise all models
         }
     }

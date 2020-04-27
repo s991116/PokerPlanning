@@ -20,11 +20,11 @@ export class Routes {
 
   private socketRouting(server: http.Server) {
     this.io = require("socket.io").listen(server, { origins: "*:*" });
+    console.log("Socket setup");
     this.io.on("connection", socket => {
       socket.on("sessionRoom", sessionRoomID => {
         socket.join(sessionRoomID);
       });
-
       socket.on("disconnect", () => {
         this.pokerController.removeDisconnectedUser(socket);
       });
