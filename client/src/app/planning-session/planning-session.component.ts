@@ -151,6 +151,7 @@ export class PlanningSessionComponent implements OnInit {
         });
 
       if (!this.userDefined) {
+        console.log("UserDefined False, Create User.");
         this.http
           .post("/createUser", {
             sessionId: this.sessionId,
@@ -175,6 +176,8 @@ export class PlanningSessionComponent implements OnInit {
             },
             () => {}
           );
+      } else {
+        console.log("UserDefined True.");
       }
     });
 
