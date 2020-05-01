@@ -63,6 +63,37 @@ export class PokerController {
     });
   }
 
+  public async updateSocketId(req: Request, res: Response, io: SocketIO.Server) {
+    let sessionId = req.body.sessionId;
+    let socketId = req.body.socketId;
+    let userId = req.body.userId;
+    DB.Models.Session.Model.findById(sessionId, async (err: any, session:any) => {
+      if (session) {
+        let user = session.users.find((i: any) => i._id === userId);
+        if (user) {
+          let oldSocketId = user.socketId;
+          user.socketId = socketId;
+          await session.save();
+          this.socketIdWithSession[socketId] = sessionId;
+          delete this.socketIdWithSession[oldSocketId];
+          io.in(sessionId).emit("status", session);
+          res.json(session);
+        } else {
+          res.status(400).json({
+            status: "error",
+            error: "userID do not exists",
+          });
+        }
+      }
+      else {
+        res.status(400).json({
+          status: "error",
+          error: "sessionId do not exists",
+        });
+      }
+    });
+  }
+
   public async removeDisconnectedUser(socket: SocketIO.Socket) {
     let sessionId = this.socketIdWithSession[socket.id];
     await DB.Models.Session.Model.findById(sessionId, async (err: any, session:any) => {

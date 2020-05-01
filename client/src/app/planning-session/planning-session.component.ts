@@ -10,7 +10,9 @@ import { ClipboardService } from "ngx-clipboard";
 import { UpdateNameService } from "./../updateName/updateName.service";
 import { Subject } from "rxjs";
 
+//Todo make general across components
 const USERNAME_SESSION_KEY = "UserInfo";
+const SESSION_KEY = "SessionInfo";
 
 @Component({
   selector: "app-planning-session",
@@ -22,6 +24,7 @@ export class PlanningSessionComponent implements OnInit {
   sessionId: string;
   sessionName: string;
   userDefined: boolean;
+  sessionDefined: boolean;
   sessionExists: boolean;
   userName: string;
   userId: string;
@@ -46,7 +49,6 @@ export class PlanningSessionComponent implements OnInit {
   ];
   selectedPlayingType = this.selectedPlayingTypes[0];
 
-
   constructor(
     private _Activatedroute: ActivatedRoute,
     @Inject(SESSION_STORAGE) private storage: StorageService,
@@ -63,27 +65,31 @@ export class PlanningSessionComponent implements OnInit {
   }
 
   newRoundForm(): void {
-    this.http.post("/newRound", {
-      id: this.sessionId
-    }).subscribe(
-      (val: any) => {},
-      (response) => {
-        console.log("POST call in error", response);
-      },
-      () => {}
-    );
+    this.http
+      .post("/newRound", {
+        id: this.sessionId,
+      })
+      .subscribe(
+        (val: any) => {},
+        (response) => {
+          console.log("POST call in error", response);
+        },
+        () => {}
+      );
   }
 
   showCardsForm(): void {
-    this.http.post("/showCards", {
-      id: this.sessionId
-    }).subscribe(
-      (val: any) => {},
-      (response) => {
-        console.log("POST call in error", response);
-      },
-      () => {}
-    );
+    this.http
+      .post("/showCards", {
+        id: this.sessionId,
+      })
+      .subscribe(
+        (val: any) => {},
+        (response) => {
+          console.log("POST call in error", response);
+        },
+        () => {}
+      );
   }
 
   onCardSelected(value: string): void {
@@ -121,12 +127,12 @@ export class PlanningSessionComponent implements OnInit {
 
   setButtonState(state: VotingState): void {
     switch (state) {
-      case 'voting':
+      case "voting":
         this.newRoundDisabled = true;
         this.showCardsDisabled = false;
         break;
 
-      case 'result':
+      case "result":
         this.newRoundDisabled = false;
         this.showCardsDisabled = true;
         break;
@@ -138,7 +144,22 @@ export class PlanningSessionComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.sessionDefined = this.storage.has(SESSION_KEY);
+
+    if (this.sessionDefined) {
+      let sId = this.storage.get(SESSION_KEY).sessionId;
+      if (sId !== this.sessionId) {
+        this.storage.set(SESSION_KEY, { sessionId: this.sessionId });
+        this.storage.remove(USERNAME_SESSION_KEY);
+      }
+    }
+    else {
+      this.storage.set(SESSION_KEY, { sessionId: this.sessionId });
+      this.storage.remove(USERNAME_SESSION_KEY);
+    }
+
     this.userDefined = this.storage.has(USERNAME_SESSION_KEY);
+
     this.socket.on("connect", () => {
       this.socket.emit("sessionRoom", this.sessionId);
 
@@ -169,6 +190,7 @@ export class PlanningSessionComponent implements OnInit {
                 this.userId,
                 this.updateNameTerm
               );
+              this.storage.set(USERNAME_SESSION_KEY, val);
             },
             (response) => {
               this.sessionExists = false;
@@ -178,11 +200,32 @@ export class PlanningSessionComponent implements OnInit {
           );
       } else {
         console.log("UserDefined True.");
+        let user = this.storage.get(USERNAME_SESSION_KEY);
+        this.userId = user._id;
+        this.userName = user.name;
+        this.http
+          .post("/UpdateSocketId", {
+            sessionId: this.sessionId,
+            userId: user._id,
+            socketId: this.socket.id,
+          })
+          .subscribe(
+            (val: any) => {
+              console.log("UpdateSocketId Response:");
+              console.log(val);
+            },
+            (response) => {
+              this.sessionExists = false;
+              console.log("POST call UpdateSocketId error", response);
+            },
+            () => {}
+          );
+        //TODO Update Client SocketID to Server, Set UserInfo from SessionStorage to local.
       }
     });
 
     this.socket.on("status", (data) => {
-      console.log("Data received:");      
+      console.log("Data received:");
       console.log(data);
       this.session = data as Session;
       console.log("State received:");
@@ -198,7 +241,7 @@ export class PlanningSessionComponent implements OnInit {
 
   UpdateViewModel(session: Session) {
     this.setButtonState(session.state);
-    console.log("Is Voting State:" + session.state == 'voting');
+    console.log("Is Voting State:" + session.state == "voting");
     this.fellowPlayers = [];
     session.users.forEach((user) => {
       if (user._id !== this.userId) {
@@ -212,7 +255,7 @@ export class PlanningSessionComponent implements OnInit {
         this.fellowPlayers.unshift(
           new FellowPlayerViewModel(user.name, user.played, cardText)
         );
-        if(user.isPlaying) {
+        if (user.isPlaying) {
           this.selectedPlayingType = this.selectedPlayingTypes[0];
         } else {
           this.selectedPlayingType = this.selectedPlayingTypes[1];
@@ -228,11 +271,11 @@ export class PlanningSessionComponent implements OnInit {
       return "Observer";
     }
     if (opponent) {
-      if (session.state == 'voting') {
+      if (session.state == "voting") {
         if (user.played) cardText = "Played Card";
         else cardText = "?";
       }
-      if (session.state == 'result') {
+      if (session.state == "result") {
         if (user.played) {
           cardText = this.cards[cardIndex].name;
         } else cardText = "No Card Played";
@@ -241,10 +284,8 @@ export class PlanningSessionComponent implements OnInit {
       if (user.played) {
         cardText = this.cards[cardIndex].name;
       } else {
-        if(session.state == 'voting')
-          cardText = "Select Card";
-        else
-          cardText = "No Card Played";
+        if (session.state == "voting") cardText = "Select Card";
+        else cardText = "No Card Played";
       }
     }
     return cardText;
