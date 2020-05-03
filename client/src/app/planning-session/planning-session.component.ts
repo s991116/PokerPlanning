@@ -1,8 +1,6 @@
 import { Component, OnInit } from "@angular/core";
 import { ActivatedRoute } from "@angular/router";
 import * as io from "socket.io-client";
-import { Inject } from "@angular/core";
-import { SESSION_STORAGE, StorageService } from "ngx-webstorage-service";
 import { HttpClient } from "@angular/common/http";
 import { Session, VotingState, Card, CardDeck, User } from "./../model/";
 import { FellowPlayerViewModel } from "./../viewModel/";
@@ -10,21 +8,16 @@ import { ClipboardService } from "ngx-clipboard";
 import { UpdateNameService } from "./../updateName/updateName.service";
 import { Subject } from "rxjs";
 
-//Todo make general across components
-const USERNAME_SESSION_KEY = "UserInfo";
-const SESSION_KEY = "SessionInfo";
-
 @Component({
   selector: "app-planning-session",
   templateUrl: "./planning-session.component.html",
   styleUrls: ["./planning-session.component.css"],
-  providers: [UpdateNameService],
+  providers: [UpdateNameService, 
+  ],
 })
 export class PlanningSessionComponent implements OnInit {
   sessionId: string;
   sessionName: string;
-  userDefined: boolean;
-  sessionDefined: boolean;
   sessionExists: boolean;
   userName: string;
   userId: string;
@@ -35,7 +28,9 @@ export class PlanningSessionComponent implements OnInit {
   fellowPlayers: FellowPlayerViewModel[];
   selectedCard: Card;
   updateNameTerm = new Subject<string>();
-  socket = io();
+  socket = io({
+    timeout: 20000,
+  });
 
   selectedPlayingTypes = [
     {
@@ -51,18 +46,10 @@ export class PlanningSessionComponent implements OnInit {
 
   constructor(
     private _Activatedroute: ActivatedRoute,
-    @Inject(SESSION_STORAGE) private storage: StorageService,
     private _clipboardService: ClipboardService,
     private http: HttpClient,
-    private updateNameService: UpdateNameService
-  ) {
-    this._Activatedroute.paramMap.subscribe((params) => {
-      this.sessionId = params.get("id");
-      console.log("Room Session Id:" + this.sessionId);
-      this.session = new Session("", "");
-    });
-    this.sessionExists = false;
-  }
+    private updateNameService: UpdateNameService,
+  ) {}
 
   newRoundForm(): void {
     this.http
@@ -144,92 +131,47 @@ export class PlanningSessionComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.sessionDefined = this.storage.has(SESSION_KEY);
-
-    if (this.sessionDefined) {
-      let sId = this.storage.get(SESSION_KEY).sessionId;
-      if (sId !== this.sessionId) {
-        this.storage.set(SESSION_KEY, { sessionId: this.sessionId });
-        this.storage.remove(USERNAME_SESSION_KEY);
-      }
-    }
-    else {
-      this.storage.set(SESSION_KEY, { sessionId: this.sessionId });
-      this.storage.remove(USERNAME_SESSION_KEY);
-    }
-
-    this.userDefined = this.storage.has(USERNAME_SESSION_KEY);
+    this.sessionId = this._Activatedroute.snapshot.params.id;
+    this.session = new Session("", "");
+    this.sessionExists = true;
 
     this.socket.on("connect", () => {
       this.socket.emit("sessionRoom", this.sessionId);
+          this.http
+            .post("/createUser", {
+              sessionId: this.sessionId,
+              socketId: this.socket.id,
+            })
+            .subscribe(
+              (val: any) => {
+                let user = new User(val._id, val.name, this.socket.id);
+                this.userName = val.name;
+                this.userId = val._id;
+                this.sessionExists = true;
 
-      this.http
-        .get("/template/businesscards")
-        .subscribe((cardDeckJson: string) => {
-          let cardDeck: CardDeck = JSON.parse(cardDeckJson);
-          this.cards = cardDeck.cards;
-          this.selectedCard = this.cards[0];
-        });
+                this.updateNameService.updateName(
+                  this.sessionId,
+                  this.userId,
+                  this.updateNameTerm
+                );              
+              },
+              (response) => {
+                this.sessionExists = false;
+              },
+              () => {}
+            );
+      });
 
-      if (!this.userDefined) {
-        console.log("UserDefined False, Create User.");
-        this.http
-          .post("/createUser", {
-            sessionId: this.sessionId,
-            socketId: this.socket.id,
-          })
-          .subscribe(
-            (val: any) => {
-              console.log("Creating user");
-              console.log(val);
-              this.userName = val.name;
-              this.userId = val._id;
-              this.sessionExists = true;
-              this.updateNameService.updateName(
-                this.sessionId,
-                this.userId,
-                this.updateNameTerm
-              );
-              this.storage.set(USERNAME_SESSION_KEY, val);
-            },
-            (response) => {
-              this.sessionExists = false;
-              console.log("POST call in error", response);
-            },
-            () => {}
-          );
-      } else {
-        console.log("UserDefined True.");
-        let user = this.storage.get(USERNAME_SESSION_KEY);
-        this.userId = user._id;
-        this.userName = user.name;
-        this.http
-          .post("/UpdateSocketId", {
-            sessionId: this.sessionId,
-            userId: user._id,
-            socketId: this.socket.id,
-          })
-          .subscribe(
-            (val: any) => {
-              console.log("UpdateSocketId Response:");
-              console.log(val);
-            },
-            (response) => {
-              this.sessionExists = false;
-              console.log("POST call UpdateSocketId error", response);
-            },
-            () => {}
-          );
-        //TODO Update Client SocketID to Server, Set UserInfo from SessionStorage to local.
-      }
-    });
+    this.http
+      .get("/template/businesscards")
+      .subscribe((cardDeckJson: string) => {
+        let cardDeck: CardDeck = JSON.parse(cardDeckJson);
+        this.cards = cardDeck.cards;
+        this.selectedCard = this.cards[0];
+      });
 
     this.socket.on("status", (data) => {
-      console.log("Data received:");
-      console.log(data);
       this.session = data as Session;
-      console.log("State received:");
-      console.log(this.session);
       this.sessionName = this.session.name;
       this.UpdateViewModel(this.session);
     });
@@ -241,7 +183,6 @@ export class PlanningSessionComponent implements OnInit {
 
   UpdateViewModel(session: Session) {
     this.setButtonState(session.state);
-    console.log("Is Voting State:" + session.state == "voting");
     this.fellowPlayers = [];
     session.users.forEach((user) => {
       if (user._id !== this.userId) {

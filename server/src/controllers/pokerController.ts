@@ -37,8 +37,10 @@ export class PokerController {
   }
 
   public async createUser(req: Request, res: Response, io: SocketIO.Server) {
+    console.log("Create User, Post.");
     let sessionId = req.body.sessionId;
     let socketId = req.body.socketId;
+    console.log("SocketId:" + socketId);
     DB.Models.Session.Model.findById(sessionId, async (err: any, session:any) => {
       if (session) {
         let user = {
@@ -63,13 +65,32 @@ export class PokerController {
     });
   }
 
+  public async userExists(req: Request, res: Response) {
+    let sessionId = req.query.sessionId;
+    let userId = req.query.userId;
+    console.log("SessionId:" + sessionId);
+    console.log("UserId:" + userId);
+    await DB.Models.Session.Model.findById(sessionId, async (err: any, session:any) => {
+      if (session) {
+        let user = session.users.find((i: User) => i._id === userId);
+        if(user) {
+          res.json(true);
+        }
+      }
+      res.json(false);
+    });
+  }
+
   public async updateSocketId(req: Request, res: Response, io: SocketIO.Server) {
     let sessionId = req.body.sessionId;
     let socketId = req.body.socketId;
     let userId = req.body.userId;
     DB.Models.Session.Model.findById(sessionId, async (err: any, session:any) => {
       if (session) {
-        let user = session.users.find((i: any) => i._id === userId);
+        console.log("Find UserID: " + userId);
+        console.log("Session id used" + sessionId);
+        console.log(session.users);
+        let user = session.users.find((i: User) => i._id === userId);
         if (user) {
           let oldSocketId = user.socketId;
           user.socketId = socketId;

@@ -57,12 +57,18 @@ export class Routes {
       this.pokerController.createUser(req, res, this.io);
     });
 
+    app.route("/userExists").get((req: Request, res: Response) => {
+      this.pokerController.userExists(req, res);
+    });
+    
     app.route("/newRound").post((req: Request, res: Response) => {
       this.pokerController.newRound(req, res, this.io);
     });
 
     app.route("/showCards").post((req: Request, res: Response) => {
-      this.pokerController.showCards(req, res, this.io);
+      this.pokerController.showCards(req, res, this.io).catch((error) => {
+        console.log("Error: " + error);
+      });
     });
 
     app.route("/vote").post((req: Request, res: Response) => {

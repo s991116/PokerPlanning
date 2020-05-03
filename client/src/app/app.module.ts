@@ -23,8 +23,6 @@ import { CreateSessionComponent } from './create-session/create-session.componen
 import { ReactiveFormsModule } from '@angular/forms';
 import { PlanningSessionComponent } from './planning-session/planning-session.component';
 
-import { StorageServiceModule } from 'ngx-webstorage-service';
-
 import { ClipboardModule } from 'ngx-clipboard';
 
 export function HttpLoaderFactory(http: HttpClient) {
@@ -49,7 +47,6 @@ export function HttpLoaderFactory(http: HttpClient) {
     MatListModule,
     AppRoutingModule,
     HttpClientModule,
-    StorageServiceModule,
     TranslateModule.forRoot({
       loader: {
         provide: TranslateLoader,
