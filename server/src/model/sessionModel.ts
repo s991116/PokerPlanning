@@ -6,8 +6,9 @@ export class SessionSchema {
   private userSchema = new UserSchema();  
   
   readonly Schema = createSchema({
-      name: Type.string({required: true}),
+      name: Type.string({default: ""}),
       state: Type.string({ required: true}),
+      cardDeckTemplateName: Type.string({ required: true}),
       creation_date: Type.date({ default: Date.now as any}),
       users: Type.array( {required: true}).of(this.userSchema.Schema)
     });

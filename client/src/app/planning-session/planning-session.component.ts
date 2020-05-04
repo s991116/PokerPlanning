@@ -7,12 +7,13 @@ import { FellowPlayerViewModel } from "./../viewModel/";
 import { ClipboardService } from "ngx-clipboard";
 import { UpdateNameService } from "./../updateName/updateName.service";
 import { Subject } from "rxjs";
+import { CardDeckService } from "./../cardDeck/card-deck.service";
 
 @Component({
   selector: "app-planning-session",
   templateUrl: "./planning-session.component.html",
   styleUrls: ["./planning-session.component.css"],
-  providers: [UpdateNameService, 
+  providers: [UpdateNameService, CardDeckService,
   ],
 })
 export class PlanningSessionComponent implements OnInit {
@@ -49,6 +50,7 @@ export class PlanningSessionComponent implements OnInit {
     private _clipboardService: ClipboardService,
     private http: HttpClient,
     private updateNameService: UpdateNameService,
+    private cardDeckService: CardDeckService,
   ) {}
 
   newRoundForm(): void {
@@ -132,9 +134,8 @@ export class PlanningSessionComponent implements OnInit {
 
   ngOnInit(): void {
     this.sessionId = this._Activatedroute.snapshot.params.id;
-    this.session = new Session("", "");
+    this.session = new Session("", "","");
     this.sessionExists = true;
-
     this.socket.on("connect", () => {
       this.socket.emit("sessionRoom", this.sessionId);
           this.http
@@ -143,12 +144,11 @@ export class PlanningSessionComponent implements OnInit {
               socketId: this.socket.id,
             })
             .subscribe(
-              (val: any) => {
-                let user = new User(val._id, val.name, this.socket.id);
+              (val: User) => {
                 this.userName = val.name;
                 this.userId = val._id;
                 this.sessionExists = true;
-
+                this.cardDeckService.getCardDeck(val.cardDeckName).then(c => { this.cards = c.cards});
                 this.updateNameService.updateName(
                   this.sessionId,
                   this.userId,
@@ -160,14 +160,6 @@ export class PlanningSessionComponent implements OnInit {
               },
               () => {}
             );
-      });
-
-    this.http
-      .get("/template/businesscards")
-      .subscribe((cardDeckJson: string) => {
-        let cardDeck: CardDeck = JSON.parse(cardDeckJson);
-        this.cards = cardDeck.cards;
-        this.selectedCard = this.cards[0];
       });
 
     this.socket.on("status", (data) => {

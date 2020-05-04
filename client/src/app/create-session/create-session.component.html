@@ -15,13 +15,21 @@
         #sessionName="ngModel"
         required
         ngModel
-        name="sessionName"
       />
+      <label for="cardDeckTemplateName">Card Deck</label>
+      <select
+        class="form-control"
+        name="cardDeckTemplateName"
+        #cardDeckTemplateName="ngModel"
+        required
+        [(ngModel)]='cardDeckTemplateSelect'
+      >
+        <option *ngFor="let ct of cardDeckTemplates">
+          {{ ct.name }}
+        </option>
+      </select>
     </div>
-    <button
-      type="submit"
-      class="btn btn-primary"
-    >
+    <button type="submit" class="btn btn-primary">
       Create session
     </button>
   </form>
