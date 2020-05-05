@@ -2,7 +2,7 @@ import { Component, OnInit } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { Router } from "@angular/router";
 import { CardDeckService } from "./../cardDeck/card-deck.service";
-import { CardDeck } from "./../model"
+import { CardDeck, Card } from "./../model"
 @Component({
   selector: "app-create-session",
   templateUrl: "./create-session.component.html",
@@ -18,11 +18,13 @@ export class CreateSessionComponent {
 
     cardDeckTemplates: CardDeck[];
     cardDeckTemplateSelect: string;
+    cardDeckSelect: Card[];
 
     ngOnInit() {
       this.cardDeckService.getAllDecks().then(cardDeckTemplates => {
         this.cardDeckTemplates = cardDeckTemplates;
         this.cardDeckTemplateSelect = this.cardDeckTemplates[0].name;
+        this.cardDeckSelectChange(this.cardDeckTemplateSelect);
       });
     }
 
@@ -37,5 +39,13 @@ export class CreateSessionComponent {
       },
       () => {}
     );
+  }
+
+  cardDeckSelectChange(cardDeckName: string) {
+    this.cardDeckService.getAllDecks().then(cardDeckTemplates => {
+      this.cardDeckSelect = cardDeckTemplates.find( ct => ct.name == cardDeckName).cards.filter(c => !c.disabled);
+    });
+
+
   }
 }

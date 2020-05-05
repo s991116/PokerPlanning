@@ -1,36 +1,57 @@
 <!-- app.component.html -->
 <div class="container">
-  <form
-    name="sessionForm"
-    #userForm="ngForm"
-    (ngSubmit)="submitForm(userForm)"
-    #sessionForm="ngForm"
-  >
-    <div class="form-group">
-      <label for="sessionName">Session name</label>
-      <input
-        type="text"
-        class="form-control"
-        name="sessionName"
-        #sessionName="ngModel"
-        required
-        ngModel
-      />
-      <label for="cardDeckTemplateName">Card Deck</label>
-      <select
-        class="form-control"
-        name="cardDeckTemplateName"
-        #cardDeckTemplateName="ngModel"
-        required
-        [(ngModel)]='cardDeckTemplateSelect'
-      >
-        <option *ngFor="let ct of cardDeckTemplates">
-          {{ ct.name }}
-        </option>
-      </select>
-    </div>
-    <button type="submit" class="btn btn-primary">
-      Create session
-    </button>
-  </form>
+  <div class="row">
+    <form
+      name="sessionForm"
+      #userForm="ngForm"
+      (ngSubmit)="submitForm(userForm)"
+      #sessionForm="ngForm"
+    >
+      <div class="form-group">
+        <label for="sessionName">Session name</label>
+        <input
+          type="text"
+          class="form-control"
+          name="sessionName"
+          #sessionName="ngModel"
+          required
+          ngModel
+        />
+        <label for="cardDeckTemplateName">Card Deck</label>
+        <select
+          class="form-control"
+          name="cardDeckTemplateName"
+          #cardDeckTemplateName="ngModel"
+          required
+          [(ngModel)]="cardDeckTemplateSelect"
+          (change)="cardDeckSelectChange($event.target.value)"
+        >
+          <option *ngFor="let ct of cardDeckTemplates">
+            {{ ct.name }}
+          </option>
+        </select>
+      </div>
+      <button type="submit" class="btn btn-primary">
+        Create session
+      </button>
+    </form>
+  </div>
+  <div class="row my-3">
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Cards in Deck</th>
+        </tr>
+      </thead>
+      <tbody>
+        <ng-container *ngIf="cardDeckSelect != undefined">
+          <tr *ngFor="let card of cardDeckSelect">
+            {{
+              card.name
+            }}
+          </tr>
+        </ng-container>
+      </tbody>
+    </table>
+  </div>
 </div>
