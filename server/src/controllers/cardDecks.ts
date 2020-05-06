@@ -34,12 +34,12 @@ export class CardDeckList {
         ]),
         new CardDeck("T-Shirt Estimate", [
           new Card("Select Estimation-Card", undefined, true),
-          new Card("XS: <= 1 Sprint", 1, false),
-          new Card("S:  <= 2 Sprint", 2, false),
-          new Card("M:  <= 4 Sprint", 4, false),
-          new Card("L:  <= 8 Sprint", 8, false),
-          new Card("XL: <= 16 Sprint", 16, false),
-          new Card("XXL > 16 Sprint", 32, false),
+          new Card("XS  (<= 1 Sprint)", 1, false),
+          new Card("S   (<= 2 Sprint)", 2, false),
+          new Card("M   (<= 4 Sprint)", 4, false),
+          new Card("L   (<= 8 Sprint)", 8, false),
+          new Card("XL  (<= 16 Sprint)", 16, false),
+          new Card("XXL (> 16 Sprint)", 32, false),
         ]),
         new CardDeck("Delegation", [
           new Card("Select Delegation type", undefined, true),
@@ -51,6 +51,14 @@ export class CardDeckList {
           new Card("Inquire - I will inquire after they decide", 6, false),
           new Card("Delegate - I will fully delegate", 7, false),
         ]),
+        new CardDeck("Assessment Numbers", [
+          new Card("Select Card", undefined, true),
+          new Card("0", 0, false),
+          new Card("1", 1, false),
+          new Card("2", 2, false),
+          new Card("3", 3, false),      
+          new Card("4", 4, false),
+        ]),
         new CardDeck("Assessment Estimation", [
           new Card("Select Assessment card", undefined, true),
           new Card("0 - Impeeded", 0, false),
@@ -58,6 +66,6 @@ export class CardDeckList {
           new Card("2 - Sustainable", 2, false),
           new Card("3 - Agile", 3, false),      
           new Card("4 - Ideal", 4, false),
-        ]),
+        ]),        
       ];
 }
