@@ -1,4 +1,4 @@
-import { Request, Response, IRoute } from "express";
+import { Request, Response } from "express";
 import express from "express";
 import * as http from "http";
 import path from "path";
