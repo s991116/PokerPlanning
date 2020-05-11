@@ -51,13 +51,21 @@ export class CardDeckList {
           new Card("Inquire - I will inquire after they decide", 6, false),
           new Card("Delegate - I will fully delegate", 7, false),
         ]),
-        new CardDeck("Assessment Numbers", [
+        new CardDeck("Assessment Numbers 0-4", [
           new Card("Select Card", undefined, true),
           new Card("0", 0, false),
           new Card("1", 1, false),
           new Card("2", 2, false),
           new Card("3", 3, false),      
           new Card("4", 4, false),
+        ]),
+        new CardDeck("Assessment Numbers 1-5", [
+          new Card("Select Card", undefined, true),
+          new Card("1", 1, false),
+          new Card("2", 2, false),
+          new Card("3", 3, false),
+          new Card("4", 4, false),      
+          new Card("5", 5, false),
         ]),
         new CardDeck("Assessment Estimation", [
           new Card("Select Assessment card", undefined, true),
