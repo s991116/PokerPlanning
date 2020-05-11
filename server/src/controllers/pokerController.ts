@@ -8,6 +8,17 @@ export class PokerController {
 
   constructor() {
     this.socketIdWithSession = {};
+    this.removeAllUsers();
+  }
+
+  private removeAllUsers() {
+    //Remove all users, if reboot has happend, now user should exists
+    DB.Models.Session.Model.find({ "users.0": { $exists: true } }, (err: any, sessions: any) => {
+      sessions.forEach((s: any) => {
+        s.users = [];
+        s.save();
+      });
+    });
   }
 
   public async createSession(req: Request, res: Response, io: SocketIO.Server) {
@@ -26,10 +37,29 @@ export class PokerController {
   public async createUser(req: Request, res: Response, io: SocketIO.Server) {
     let sessionId = req.body.sessionId;
     let socketId = req.body.socketId;
+    let storageUser = req.body.storageUser as User;
     DB.Models.Session.Model.findById(sessionId, async (err: any, session: any) => {
-      if (session) {        
-        let user = new User(uuidv4(), "User", socketId, session.cardDeckTemplateName);
-        session.users.push(user);
+      let user: User;
+      if (session) {
+        if (storageUser) {
+          storageUser.socketId = socketId;
+          let uIndex = session.users.findIndex((u: User) => u._id == storageUser._id);
+
+          if (uIndex > 0) {
+            session.users.splice(uIndex, 1, storageUser);
+            user = storageUser;
+            console.log("Update existing user with id: " + storageUser._id);
+          } else {
+            storageUser._id = uuidv4();
+            user = storageUser;
+            console.log("Adding new with old settings except ID, user with id: " + user._id);
+            session.users.push(user);
+          }
+        } else {
+          user = new User(uuidv4(), "User", socketId, session.cardDeckTemplateName);
+          console.log("Adding new user with id: " + user._id);
+          session.users.push(user);
+        }
         this.socketIdWithSession[socketId] = sessionId;
         await session.save();
         io.in(sessionId).emit("status", session);

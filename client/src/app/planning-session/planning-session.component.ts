@@ -8,13 +8,14 @@ import { ClipboardService } from "ngx-clipboard";
 import { UpdateNameService } from "./../updateName/updateName.service";
 import { Subject } from "rxjs";
 import { CardDeckService } from "./../cardDeck/card-deck.service";
+import { Inject } from "@angular/core";
+import { SESSION_STORAGE, StorageService } from "ngx-webstorage-service";
 
 @Component({
   selector: "app-planning-session",
   templateUrl: "./planning-session.component.html",
   styleUrls: ["./planning-session.component.css"],
-  providers: [UpdateNameService, CardDeckService,
-  ],
+  providers: [UpdateNameService, CardDeckService],
 })
 export class PlanningSessionComponent implements OnInit {
   sessionId: string;
@@ -51,6 +52,7 @@ export class PlanningSessionComponent implements OnInit {
     private http: HttpClient,
     private updateNameService: UpdateNameService,
     private cardDeckService: CardDeckService,
+    @Inject(SESSION_STORAGE) private storage: StorageService
   ) {}
 
   newRoundForm(): void {
@@ -134,33 +136,41 @@ export class PlanningSessionComponent implements OnInit {
 
   ngOnInit(): void {
     this.sessionId = this._Activatedroute.snapshot.params.id;
-    this.session = new Session("", "","");
+    this.session = new Session("", "", "");
     this.sessionExists = true;
     this.socket.on("connect", () => {
       this.socket.emit("sessionRoom", this.sessionId);
-          this.http
-            .post("/createUser", {
-              sessionId: this.sessionId,
-              socketId: this.socket.id,
-            })
-            .subscribe(
-              (val: User) => {
-                this.userName = val.name;
-                this.userId = val._id;
-                this.sessionExists = true;
-                this.cardDeckService.getCardDeck(val.cardDeckName).then(c => { this.cards = c.cards});
-                this.updateNameService.updateName(
-                  this.sessionId,
-                  this.userId,
-                  this.updateNameTerm
-                );              
-              },
-              (response) => {
-                this.sessionExists = false;
-              },
-              () => {}
+      let storageUser: User;
+      if (this.storage.has("SessionUserPokerPlanningV1")) {
+        storageUser = this.storage.get("SessionUserPokerPlanningV1");
+      }
+      this.http
+        .post("/createUser", {
+          sessionId: this.sessionId,
+          socketId: this.socket.id,
+          storageUser: storageUser,
+        })
+        .subscribe(
+          (val: User) => {
+            this.userName = val.name;
+            this.userId = val._id;
+            this.sessionExists = true;
+            this.cardDeckService.getCardDeck(val.cardDeckName).then((c) => {
+              this.cards = c.cards;
+              this.storage.set("SessionUserPokerPlanningV1", val);
+            });
+            this.updateNameService.updateName(
+              this.sessionId,
+              this.userId,
+              this.updateNameTerm
             );
-      });
+          },
+          (response) => {
+            this.sessionExists = false;
+          },
+          () => {}
+        );
+    });
 
     this.socket.on("status", (data) => {
       this.session = data as Session;
