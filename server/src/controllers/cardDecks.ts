@@ -75,5 +75,11 @@ export class CardDeckList {
           new Card("3 - Agile", 3, false),      
           new Card("4 - Ideal", 4, false),
         ]),        
+          new CardDeck("True False", [
+          new Card("Select card", undefined, true),
+          new Card("False", 0, false),
+          new Card("True", 1, false),
+        ]),        
+
       ];
 }
