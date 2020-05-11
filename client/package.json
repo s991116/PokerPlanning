@@ -31,7 +31,7 @@
     "bootstrap": "^4.4.1",
     "core-js": "~2.5.4",
     "express": "~4.16.4",
-    "jquery": "^3.4.1",
+    "jquery": "^3.5.0",
     "ngx-clipboard": "^13.0.0",
     "ngx-webstorage-service": "^4.1.0",
     "rxjs": "^6.5.5",
