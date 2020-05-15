@@ -1,6 +1,7 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NgModule } from '@angular/core';
+import { StorageSessionService } from './storageSession/storage-session.service';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -24,6 +25,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { PlanningSessionComponent } from './planning-session/planning-session.component';
 
 import { ClipboardModule } from 'ngx-clipboard';
+import { UpdateNameService } from './updateName/updateName.service';
 
 export function HttpLoaderFactory(http: HttpClient) {
   return new TranslateHttpLoader(http);
@@ -58,6 +60,8 @@ export function HttpLoaderFactory(http: HttpClient) {
     ClipboardModule
   ],
   providers: [
+    StorageSessionService,
+    UpdateNameService
   ],
   bootstrap: [AppComponent]
 })

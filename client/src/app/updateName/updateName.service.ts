@@ -1,13 +1,13 @@
-import { Inject, Injectable } from "@angular/core";
+import { Component } from "@angular/core";
+import { Injectable } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { Observable } from "rxjs";
 import { debounceTime, distinctUntilChanged, filter } from "rxjs/operators";
-import { SESSION_STORAGE, StorageService } from "ngx-webstorage-service";
-import { User } from '../model';
+import { StorageSessionService } from "./../storageSession/storage-session.service"
 
 @Injectable()
 export class UpdateNameService {
-  constructor(private http: HttpClient, @Inject(SESSION_STORAGE) private storage: StorageService) {}
+  constructor(private http: HttpClient, private storageSessionService: StorageSessionService) {}
 
   updateName(sessionId: string, userId: string, terms: Observable<string>): void {
     terms
@@ -19,9 +19,9 @@ export class UpdateNameService {
       .subscribe(term => {
         this.http.post("/updateName", {id: sessionId, userId: userId, userName: term}).subscribe(
           (val: any) => {
-            let sessionUser = this.storage.get("SessionUserPokerPlanningV1") as User;
+            let sessionUser = this.storageSessionService.GetUser();
             sessionUser.name = term;
-            this.storage.set("SessionUserPokerPlanningV1", sessionUser);
+            this.storageSessionService.SetUser(sessionUser);
           },
           response => {
             console.log("POST call in error", response);

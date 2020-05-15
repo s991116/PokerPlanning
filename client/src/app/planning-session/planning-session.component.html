@@ -50,7 +50,11 @@
             #mySelect
             (change)="onCardSelected(mySelect.selectedIndex)"
           >
-            <option *ngFor="let card of cards" [disabled]="card.disabled" [ngValue]="card">
+            <option
+              *ngFor="let card of cards"
+              [disabled]="card.disabled"
+              [ngValue]="card"
+            >
               {{ card.name }}
             </option>
           </select>
@@ -64,9 +68,9 @@
             #mySelectedPlayerType
             (change)="onPlayerTypeSelected(mySelectedPlayerType.selectedIndex)"
           >
-          <option *ngFor="let o of selectedPlayingTypes" [ngValue]="o">
-            {{o.name}}
-         </option>
+            <option *ngFor="let o of selectedPlayingTypes" [ngValue]="o">
+              {{ o.name }}
+            </option>
           </select>
         </div>
       </div>
@@ -81,10 +85,14 @@
                 *ngFor="let user of fellowPlayers"
                 class="list-group-item d-flex justify-content-between align-items-center"
               >
-                {{ user.name }}
-                <span class="badge badge-primary badge-pill">
-                  {{ user.cardText }}</span
-                >
+                <h4>
+                  {{ user.name }}
+                </h4>
+                <h4>
+                  <span class="badge badge-success">
+                    {{ user.cardText }}
+                  </span>
+                </h4>
               </li>
             </ul>
           </div>

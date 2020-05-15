@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
-import { User, VotingState} from "./../model";
+import { User, VotingState, Session } from "./../model";
 import { v4 as uuidv4 } from "uuid";
 import { DB } from "./db";
-import { CardDeckList } from "./cardDecks"
+import { CardDeckList } from "./cardDecks";
 export class PokerController {
   private socketIdWithSession: { [sessionId: string]: string };
 
@@ -43,11 +43,13 @@ export class PokerController {
       if (session) {
         if (storageUser) {
           storageUser.socketId = socketId;
+          console.log("Searching for storageUser id:" + storageUser._id);
           let uIndex = session.users.findIndex((u: User) => u._id == storageUser._id);
 
           if (uIndex > 0) {
             session.users.splice(uIndex, 1, storageUser);
             user = storageUser;
+
             console.log("Update existing user with id: " + storageUser._id);
           } else {
             storageUser._id = uuidv4();
@@ -56,14 +58,30 @@ export class PokerController {
             session.users.push(user);
           }
         } else {
-          user = new User(uuidv4(), "User", socketId, session.cardDeckTemplateName);
+          user = new User(uuidv4(), "User", socketId);
           console.log("Adding new user with id: " + user._id);
           session.users.push(user);
         }
         this.socketIdWithSession[socketId] = sessionId;
         await session.save();
         io.in(sessionId).emit("status", session);
-        res.json(user);
+        let response: any = { user: user, session: session };
+        res.json(response);
+      } else {
+        res.status(400).json({
+          status: "error",
+          error: "sessionId do not exists",
+        });
+      }
+    });
+  }
+
+  public async getCardDeck(req: Request, res: Response) {
+    let sessionId = req.query.sessionId;
+    console.log("Get Cardname for SessionId: " + sessionId);
+    DB.Models.Session.Model.findById(sessionId, async (err: any, session: Session) => {
+      if (session) {
+        res.json(session.cardDeckTemplateName);
       } else {
         res.status(400).json({
           status: "error",
@@ -190,6 +208,7 @@ export class PokerController {
     console.log("sessionId: " + sessionId);
     await DB.Models.Session.Model.findById(sessionId, async (err: any, session: any) => {
       if (session) {
+        console.log("Find User to rename:" + userId);
         let user = session.users.find((i: any) => i._id === userId);
         if (user) {
           user.name = userName;

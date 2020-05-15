@@ -5,17 +5,16 @@ import { HttpClient } from "@angular/common/http";
 import { Session, VotingState, Card, CardDeck, User } from "./../model/";
 import { FellowPlayerViewModel } from "./../viewModel/";
 import { ClipboardService } from "ngx-clipboard";
-import { UpdateNameService } from "./../updateName/updateName.service";
 import { Subject } from "rxjs";
 import { CardDeckService } from "./../cardDeck/card-deck.service";
-import { Inject } from "@angular/core";
-import { SESSION_STORAGE, StorageService } from "ngx-webstorage-service";
+import { StorageSessionService } from "./../storageSession/storage-session.service"
+import { UpdateNameService } from "./../updateName/updateName.service";
 
 @Component({
   selector: "app-planning-session",
   templateUrl: "./planning-session.component.html",
   styleUrls: ["./planning-session.component.css"],
-  providers: [UpdateNameService, CardDeckService],
+  providers: [CardDeckService, StorageSessionService, UpdateNameService],
 })
 export class PlanningSessionComponent implements OnInit {
   sessionId: string;
@@ -50,9 +49,9 @@ export class PlanningSessionComponent implements OnInit {
     private _Activatedroute: ActivatedRoute,
     private _clipboardService: ClipboardService,
     private http: HttpClient,
+    private storageSessionService: StorageSessionService,
     private updateNameService: UpdateNameService,
     private cardDeckService: CardDeckService,
-    @Inject(SESSION_STORAGE) private storage: StorageService
   ) {}
 
   newRoundForm(): void {
@@ -140,30 +139,34 @@ export class PlanningSessionComponent implements OnInit {
     this.sessionExists = true;
     this.socket.on("connect", () => {
       this.socket.emit("sessionRoom", this.sessionId);
-      let storageUser: User;
-      if (this.storage.has("SessionUserPokerPlanningV1")) {
-        storageUser = this.storage.get("SessionUserPokerPlanningV1");
-      }
+      let storageUser = this.storageSessionService.GetUser()
+      let storageSession = this.storageSessionService.GetSession();
+      let storageSessionId: string = storageSession ? storageSession.id : undefined
       this.http
         .post("/createUser", {
           sessionId: this.sessionId,
           socketId: this.socket.id,
           storageUser: storageUser,
+          storageSessionId: storageSessionId,
         })
         .subscribe(
-          (val: User) => {
-            this.userName = val.name;
-            this.userId = val._id;
+          (response: any) => {
+            let user = response.user as User;
+            this.session = response.session as Session;
+            this.userName = user.name;
+            this.userId = user._id;
             this.sessionExists = true;
-            this.cardDeckService.getCardDeck(val.cardDeckName).then((c) => {
+            this.cardDeckService.getCardDeck(this.session.cardDeckTemplateName).then((c) => {
               this.cards = c.cards;
-              this.storage.set("SessionUserPokerPlanningV1", val);
+              this.storageSessionService.SetUser(user);
+              this.storageSessionService.SetSession(this.session);
+              this.updateNameService.updateName(
+                this.sessionId,
+                this.userId,
+                this.updateNameTerm
+              );
+              this.UpdateViewModel(this.session);
             });
-            this.updateNameService.updateName(
-              this.sessionId,
-              this.userId,
-              this.updateNameTerm
-            );
           },
           (response) => {
             this.sessionExists = false;
@@ -181,6 +184,8 @@ export class PlanningSessionComponent implements OnInit {
 
   ngOnDestroy() {
     this.socket.close();
+    this.updateNameTerm.next();
+    this.updateNameTerm.complete();
   }
 
   UpdateViewModel(session: Session) {
@@ -206,6 +211,7 @@ export class PlanningSessionComponent implements OnInit {
       }
     });
   }
+
 
   private getCardText(user: User, session: Session, opponent: boolean): string {
     var cardIndex = Math.max(1, user.cardIndex);

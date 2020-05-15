@@ -45,10 +45,13 @@ export class Routes {
       res.status(200).sendFile(`/`, { root: htmlPath });
     });
 
-    app.route("/template/cardDecks").get((req: Request, res: Response) => {
+    app.route("/cardDecks").get((req: Request, res: Response) => {
       this.pokerController.getCardDecks(req, res);
     });
 
+    app.route("/cardDeck").get((req: Request, res: Response) => {
+      this.pokerController.getCardDeck(req, res);
+    })
     app.route("/createSession").post(async (req: Request, res: Response) => {
       this.pokerController.createSession(req, res, this.io);
     });

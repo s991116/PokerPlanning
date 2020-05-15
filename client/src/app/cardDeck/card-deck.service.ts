@@ -9,7 +9,7 @@ export class CardDeckService {
 
   constructor(private http: HttpClient) {
     this.cardDecks = new Promise<CardDeck[]>((resolve, reject) => {
-      this.http.get("/template/cardDecks").subscribe((cardDeckJson: string) => {
+      this.http.get("/cardDecks").subscribe((cardDeckJson: string) => {
         resolve(JSON.parse(cardDeckJson));
       });
     });
@@ -21,14 +21,14 @@ export class CardDeckService {
     });
   }
 
-  getCardDeck(name: string): Promise<CardDeck> {
-    return this.cardDecks.then((cardDecks) => {
-      console.log("Searching for carddeck name:" + name);
-      let cd =  cardDecks.find((element, index, array) => {
-        return name == element.name;
+  getCardDeck(templateName: string): Promise<CardDeck> {
+    return new Promise((resolve, reject) => {
+      this.cardDecks.then((cardDecks) => {
+        let cd = cardDecks.find((element, index, array) => {
+          return templateName == element.name;
+        });
+        resolve(cd);
       });
-      console.log("Found Carddeck:" + cd);
-      return cd;
     });
   }
 }
